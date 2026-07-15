@@ -1,5 +1,5 @@
 /**
- * NSS-WGS v12.1 — 全局状态同步中枢
+ * NSS-WGS v12.3 — 全局状态同步中枢
  * 职责：接收所有模块状态变更 → 传播到全局数据结构 → 触发UI刷新
  *
  * 这是系统的"中枢神经系统"，确保没有任何模块是数据孤岛。
@@ -184,11 +184,11 @@ const GlobalStateSync = {
           match.trend = Math.round((match.readiness - match._prevReadiness) / 2);
         }
         match._prevReadiness = match.readiness;
-        // 根据战备度更新状态标签
-        if(match.readiness >= 85) match.status = '精锐';
-        else if(match.readiness >= 70) match.status = '常备';
-        else if(match.readiness >= 50) match.status = '待修';
-        else match.status = '损耗';
+        // 根据战备度更新状态标签（与 app.js renderForces 英文值一致）
+        if(match.readiness >= 85) match.status = 'high_alert';
+        else if(match.readiness >= 70) match.status = 'deployed';
+        else if(match.readiness >= 50) match.status = 'active';
+        else match.status = 'ready';
       }
     });
   },

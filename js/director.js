@@ -273,7 +273,7 @@ const Director = {
                 <div class="dir-sit-stat">
                   <div class="dir-ss-label">综合军力</div>
                   <div class="dir-ss-val" style="color:var(--cyan)">${sit.forcesAvg}%</div>
-                  <div class="dir-ss-sub">11军种均值</div>
+                  <div class="dir-ss-sub">${(typeof FORCES !== 'undefined' ? FORCES.length : 11)}军种均值</div>
                 </div>
                 <div class="dir-sit-stat">
                   <div class="dir-ss-label">威胁等级</div>

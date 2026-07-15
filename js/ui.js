@@ -99,28 +99,40 @@ function startDataStream(){
   _streamTimer = setInterval(refresh, 12000);
 }
 
-/* 系统监控数据动画 */
+/* 系统监控数据动画 — 从 GlobalStateSync 拉取实时数据，附加轻微波动 */
 let _monitorTimer = null;
 function startMonitor(){
-  const metrics = [
-    { id:'m-cpu',  base:42, range:15 },
-    { id:'m-mem',  base:68, range:10 },
-    { id:'m-net',  base:55, range:20 },
-    { id:'m-sec',  base:88, range:8  },
-  ];
   function update(){
+    // 从全局状态同步中枢获取实时数据
+    const monitor = (typeof GlobalStateSync !== 'undefined') ? GlobalStateSync.getLiveSystemMonitor() : null;
+    const forces = (typeof FORCES !== 'undefined') ? FORCES : [];
+
+    const domainAvg = monitor ? (monitor.domainAvg || 50) : 50;
+    const forceAvg = monitor ? (monitor.forceAvg || 68) : 68;
+    const gameCount = monitor ? (monitor.gameCount || 0) : 0;
+    const activeThreats = monitor ? (monitor.activeThreats || 0) : 0;
+
+    // 4 个进度条：真实数据 + 轻微波动(±2)模拟实时感
+    const metrics = [
+      { id:'m-cpu',  val: Math.min(100, Math.max(0, domainAvg + (Math.random() - 0.5) * 4)), suffix:'%' },
+      { id:'m-mem',  val: Math.min(100, Math.max(0, forceAvg + (Math.random() - 0.5) * 4)), suffix:'%' },
+      { id:'m-net',  val: Math.min(100, gameCount * 5 + (Math.random() - 0.5) * 3), suffix:'%' },
+      { id:'m-sec',  val: Math.min(100, activeThreats * 15 + (Math.random() - 0.5) * 3), suffix:'%' },
+    ];
     for(const m of metrics){
       const bar = document.getElementById(m.id);
       if(!bar) continue;
-      const v = Math.min(m.base + Math.random() * m.range, 100);
+      const v = Math.round(m.val);
       bar.style.width = v + '%';
       const val = bar.parentElement.querySelector('.sm-val');
-      if(val) val.textContent = Math.round(v) + '%';
+      if(val) val.textContent = v + m.suffix;
     }
+
+    // 底部状态行：与 renderOverview 语义一致
     const lat = document.getElementById('m-latency');
-    if(lat) lat.textContent = (12 + Math.floor(Math.random() * 8)) + 'ms';
+    if(lat) lat.textContent = gameCount + '场';
     const node = document.getElementById('m-nodes');
-    if(node) node.textContent = String(1247 + Math.floor(Math.random() * 20)).padStart(6, '0');
+    if(node) node.textContent = forces.length + '支';
   }
   update();
   if(_monitorTimer) clearInterval(_monitorTimer);

@@ -834,4 +834,6 @@ if(typeof window !== 'undefined'){
   window.USER = USER; window.STATE = STATE; window.SCENARIOS = SCENARIOS;
   window.SCENARIO_SIDES = SCENARIO_SIDES; window.FORCES = FORCES; window.INTEL = INTEL;
   window.DOMAIN_MAP = DOMAIN_MAP; window.MODULES = MODULES;
+  window.THREATS = THREATS; window.TIMELINE = TIMELINE;
+  window.DOMAINS = DOMAINS; window.DEFAULT_SIDES = DEFAULT_SIDES;
 }

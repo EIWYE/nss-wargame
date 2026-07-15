@@ -1,5 +1,5 @@
 /* ================================================================
- * 国家安全战略兵棋推演平台 v12.0
+ * 国家安全战略兵棋推演平台 v12.3
  * 功能区协同推演系统 (Functional Zone Cooperative Wargaming System)
  *
  * 核心理念: 功能区不是孤岛，而是推演的"战略纵深"
@@ -316,7 +316,7 @@ const SCENARIO_ZONES = {
     },
     recommendedTraining: ['strategic_assessment'],
   },
-  space_war: {
+  space_domain: {
     active: ['intel','tech','command'],
     priority: 'tech',
     notes: {
@@ -330,14 +330,14 @@ const SCENARIO_ZONES = {
     active: ['intel','tech','economy','training'],
     priority: 'tech',
     notes: {
-      intel:'人工智能军事化进展和芯片管制是情报重点',
-      tech:'人工智能攻防和自主系统是技术核心',
-      economy:'人工智能人才争夺和产业投入是经济关键',
-      training:'推荐完成「网络攻防训练」',
+      intel:'人工智能军事化进展、芯片管制和极紫外光刻禁运是情报重点',
+      tech:'人工智能攻防、自主系统和芯片自主替代是技术核心',
+      economy:'人才争夺、产业投入和供应链重构是经济关键',
+      training:'推荐完成「网络攻防训练」和「经济战训练」',
     },
-    recommendedTraining: ['cyber_warfare','strategic_assessment'],
+    recommendedTraining: ['cyber_warfare','economic_warfare','strategic_assessment'],
   },
-  financial_war: {
+  finance_war: {
     active: ['intel','economy','tech','training'],
     priority: 'economy',
     notes: {
@@ -348,7 +348,7 @@ const SCENARIO_ZONES = {
     },
     recommendedTraining: ['economic_warfare','intel_analysis'],
   },
-  resource_war: {
+  rare_earth: {
     active: ['intel','economy','logistics','command'],
     priority: 'economy',
     notes: {
@@ -358,17 +358,6 @@ const SCENARIO_ZONES = {
       command:'海外矿区安保是军事任务',
     },
     recommendedTraining: ['economic_warfare','logistics_planning'],
-  },
-  chip_war: {
-    active: ['intel','economy','tech','training'],
-    priority: 'tech',
-    notes: {
-      intel:'极紫外光刻禁运和人才挖角是情报重点',
-      economy:'供应链重构是经济关键',
-      tech:'芯片自主替代是技术核心',
-      training:'推荐完成「经济战训练」',
-    },
-    recommendedTraining: ['economic_warfare','strategic_assessment'],
   },
   digital_sovereignty: {
     active: ['intel','tech','economy'],

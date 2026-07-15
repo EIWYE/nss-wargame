@@ -1,5 +1,5 @@
 /* ================================================================
- * 国家安全战略兵棋推演平台 v12.0 — 主应用控制器
+ * 国家安全战略兵棋推演平台 v12.3 — 主应用控制器
  * ================================================================ */
 
 const App = {
@@ -48,7 +48,7 @@ const App = {
     // 密级条
     const classBar = `<div class="class-bar">
       <div class="right">
-        <span>国安兵棋推演系统 v12.0</span>
+        <span>国安兵棋推演系统 v12.3</span>
       </div>
     </div>`;
 
@@ -69,7 +69,7 @@ const App = {
       </div>
       <div class="logo-text">
         <h1>国家安全战略兵棋推演平台</h1>
-        <div class="ver-tag">v12.0 专业版</div>
+        <div class="ver-tag">v12.3 专业版</div>
       </div>
       <div class="topbar-right">
         <div class="sys-status">
@@ -1989,13 +1989,29 @@ const App = {
           const ecoD = (typeof DOMAINS !== 'undefined') ? DOMAINS.find(d => d.id === 'economic') : null;
           const dipD = (typeof DOMAINS !== 'undefined') ? DOMAINS.find(d => d.id === 'diplomatic') : null;
           const techD = (typeof DOMAINS !== 'undefined') ? DOMAINS.find(d => d.id === 'cyber') : null;
+          const dipM = (typeof MODULES !== 'undefined') ? MODULES.find(m => m.id === 'diplomatic') : null;
+          const techM = (typeof MODULES !== 'undefined') ? MODULES.find(m => m.id === 'tech') : null;
+          const getMetric = (d, k, fb) => (d && d.metrics && d.metrics[k]) ? d.metrics[k] : fb;
+          const getRes = (m, k, fb) => (m && m.resources) ? (m.resources.find(r => r.name === k)?.value || fb) : fb;
           const cards = [
             { icon:'💰', name:'经济金融力量', code:'经济', domain:ecoD,
-              info:[['GDP增速','+5.2%'],['外汇储备','3.2万亿美元'],['活跃制裁','6项']] },
+              info:[
+                ['经济增速', getMetric(ecoD,'经济增速','+5.2%')],
+                ['外汇储备', getMetric(ecoD,'外汇储备','3.2万亿美元')],
+                ['活跃制裁', getMetric(ecoD,'活跃制裁','6项')],
+              ]},
             { icon:'🤝', name:'外交影响力', code:'外交', domain:dipD,
-              info:[['建交国','183个'],['多边机制','15项'],['领事保护','全球覆盖']] },
+              info:[
+                ['盟友', getMetric(dipD,'盟友','47国')],
+                ['多边机制', getRes(dipM,'多边机制参与','12项')],
+                ['驻外机构', getRes(dipM,'驻外机构','276个')],
+              ]},
             { icon:'🔬', name:'科技创新力量', code:'科技', domain:techD,
-              info:[['研发投入','3.3万亿'],['专利申请','全球第一'],['核心领域','量子/人工智能/航天']] },
+              info:[
+                ['研发投入', getRes(techM,'研发投入','3.3万亿')],
+                ['专利保有', getRes(techM,'专利保有','420万件')],
+                ['关键技术', getRes(techM,'关键技术攻关','35项')],
+              ]},
           ];
           return cards.map(c => {
             const ready = c.domain ? c.domain.readiness : 70;
@@ -4177,7 +4193,7 @@ const App = {
           <div style="margin-top:20px;padding:16px;background:rgba(8,20,40,.5);border-radius:6px;border:1px solid var(--border)">
             <div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:8px">系统信息</div>
             <div style="font-size:13px;color:var(--txt-1);line-height:2">
-              <div>版本：国家安全战略兵棋推演平台 v12.0 专业版</div>
+              <div>版本：国家安全战略兵棋推演平台 v12.3 专业版</div>
               <div>场景库：${SCENARIOS.length}个场景</div>
               <div>战略行动：${typeof STRATEGIC_ACTIONS !== 'undefined' ? STRATEGIC_ACTIONS.length : 0}项</div>
               <div>军种力量：${FORCES.length}个军种</div>
