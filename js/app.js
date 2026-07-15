@@ -1,5 +1,5 @@
 /* ================================================================
- * 国家安全战略兵棋推演平台 v12.3 — 主应用控制器
+ * 国家安全战略兵棋推演平台 v12.4 — 主应用控制器
  * ================================================================ */
 
 const App = {
@@ -48,7 +48,7 @@ const App = {
     // 密级条
     const classBar = `<div class="class-bar">
       <div class="right">
-        <span>国安兵棋推演系统 v12.3</span>
+        <span>国安兵棋推演系统 v12.4</span>
       </div>
     </div>`;
 
@@ -69,7 +69,7 @@ const App = {
       </div>
       <div class="logo-text">
         <h1>国家安全战略兵棋推演平台</h1>
-        <div class="ver-tag">v12.3 专业版</div>
+        <div class="ver-tag">v12.4 专业版</div>
       </div>
       <div class="topbar-right">
         <div class="sys-status">
@@ -246,7 +246,7 @@ const App = {
     const tc = document.getElementById('tabContent');
     if(!tc) return;
 
-    // 威胁信息流条目 → 点击弹窗
+    // 威胁信息流条目 → 点击弹窗 + 联动推演
     tc.querySelectorAll('.sa-feed-item').forEach(el => {
       el.style.cursor = 'pointer';
       el.addEventListener('click', () => {
@@ -254,21 +254,97 @@ const App = {
         const tag = el.querySelector('.sa-fi-tag')?.textContent || '';
         const time = el.querySelector('.sa-fi-time')?.textContent || '';
         const tagColor = el.querySelector('.sa-fi-tag')?.style.color || 'var(--cyan)';
+        const threatId = el.getAttribute('data-threat-id') || '';
+        const threatType = el.getAttribute('data-threat-type') || 'military';
+        const threatTitle = el.getAttribute('data-threat-title') || text;
+
+        // 查找关联推演场景
+        const threatResponse = (typeof THREAT_RESPONSES !== 'undefined') ? THREAT_RESPONSES[threatId] : null;
+        const relatedScenarioId = threatResponse ? threatResponse.relatedScenario : '';
+        const relatedScenario = relatedScenarioId ? (typeof SCENARIOS !== 'undefined' ? SCENARIOS.find(s => s.id === relatedScenarioId) : null) : null;
+
+        // 查找威胁详情
+        const threatDetail = (typeof THREATS !== 'undefined') ? THREATS.find(t => t.id === threatId) : null;
+        const descText = threatDetail ? threatDetail.desc : '';
+        const sevVal = threatDetail ? threatDetail.severity : (tag.includes('严重') ? 5 : tag.includes('较高') ? 4 : 3);
+        const location = threatDetail ? threatDetail.location : '';
+
+        // 查找威胁响应模板
+        const tcResponse = (typeof ThreatContext !== 'undefined') ? ThreatContext.getThreatResponse(threatId, threatType) : null;
+        const relatedZones = [];
+        if(tcResponse && tcResponse.zones){
+          const zoneNames = { intel:'情报中心', command:'指挥中心', logistics:'后勤中心', economy:'经济中心', tech:'科技中心' };
+          Object.keys(tcResponse.zones).forEach(zid => {
+            const zcfg = (typeof ZONE_CONFIG !== 'undefined') ? ZONE_CONFIG[zid] : null;
+            relatedZones.push(zcfg ? zcfg.short : zoneNames[zid] || zid);
+          });
+        }
+
         this.showInfoModal('威胁信息详情', time + ' · ' + tag, `
           <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
             <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:${tagColor}22;color:${tagColor};border:1px solid ${tagColor}44">${tag}</span>
             <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(0,180,216,.12);color:var(--cyan);border:1px solid var(--border-mid)">⏱ ${time}</span>
+            ${location ? `<span style="font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.2)">📍 ${esc(location)}</span>` : ''}
           </div>
-          <div style="font-size:13px;color:var(--txt-0);line-height:1.8;margin-bottom:16px">${esc(text)}</div>
-          <div style="padding:12px;background:rgba(8,20,40,.5);border-radius:5px;border:1px solid var(--border);font-size:12px;color:var(--txt-1);line-height:1.7">
+          <div style="font-size:14px;font-weight:700;color:var(--txt-0);margin-bottom:10px">${esc(text)}</div>
+          ${descText ? `<div style="font-size:13px;color:var(--txt-1);line-height:1.8;margin-bottom:14px">${esc(descText)}</div>` : ''}
+          <div style="padding:12px;background:rgba(8,20,40,.5);border-radius:5px;border:1px solid var(--border);font-size:12px;color:var(--txt-1);line-height:1.7;margin-bottom:14px">
             <div style="font-weight:700;color:var(--amber);margin-bottom:6px">📋 建议处置</div>
             <div>• 立即通报相关战区与情报中心，启动联合研判</div>
             <div>• 提升对应方向战备等级，前出侦察力量确认态势</div>
             <div>• 同步上报指挥中心，拟定反制方案与预案</div>
           </div>
-          <div style="display:flex;gap:16px;justify-content:flex-end;margin-top:16px">
-            <button class="btn btn-sm" onclick="App.switchTab('intel')">🔍 前往情报中心</button>
-            <button class="btn btn-sm btn-amber" onclick="App.switchTab('zone_command')">⚔️ 前往指挥中心</button>
+          ${relatedZones.length ? `<div style="padding:10px;background:rgba(46,213,115,.04);border-radius:5px;border:1px solid rgba(46,213,115,.15);font-size:12px;color:var(--txt-1);margin-bottom:14px">
+            <div style="font-weight:700;color:var(--green);margin-bottom:4px">🔗 关联功能区</div>
+            <div>${relatedZones.map(z => '<span style="display:inline-block;padding:2px 8px;margin:2px;background:rgba(46,213,115,.08);border-radius:3px;font-size:11px">'+z+'</span>').join('')}</div>
+          </div>` : ''}
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap">
+            ${relatedScenario ? `<button class="btn btn-sm btn-red" onclick="App._launchThreatWargame('${relatedScenarioId}')">🎮 启动推演：${esc(relatedScenario.name)}</button>` : ''}
+            <button class="btn btn-sm" onclick="App.switchTab('zones')">🔍 前往功能区响应</button>
+            <button class="btn btn-sm btn-amber" onclick="App.switchTab('zone_command')">⚔️ 指挥中心</button>
+          </div>`);
+      });
+    });
+
+    // 力量部署雷达节点 → 点击弹窗 + 联动推演
+    tc.querySelectorAll('[data-force-code]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const code = el.getAttribute('data-force-code') || '';
+        const branch = el.getAttribute('data-force-branch') || '';
+        const readiness = parseInt(el.getAttribute('data-force-readiness')) || 0;
+        const status = el.getAttribute('data-force-status') || '';
+        const deploy = el.getAttribute('data-force-deploy') || '';
+        const equip = el.getAttribute('data-force-equip') || '';
+        const domain = el.getAttribute('data-force-domain') || '';
+
+        const statusMap = { high_alert:'高度戒备', deployed:'已部署', active:'活跃', ready:'就绪' };
+        const statusLabel = statusMap[status] || status;
+        const statusColor = status === 'high_alert' ? 'var(--red)' : (status === 'deployed' || status === 'active') ? 'var(--green)' : 'var(--cyan)';
+
+        // 查找关联场景
+        const domainScenarios = (typeof SCENARIOS !== 'undefined') ? SCENARIOS.filter(s => s.domain === domain).slice(0, 3) : [];
+
+        this.showInfoModal(branch + ' · 战备详情', code + ' · ' + statusLabel, `
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+            <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:${statusColor}22;color:${statusColor};border:1px solid ${statusColor}44">${statusLabel}</span>
+            <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(0,180,216,.12);color:var(--cyan);border:1px solid var(--border-mid)">战备度 ${readiness}%</span>
+          </div>
+          <div style="padding:12px;background:rgba(8,20,40,.5);border-radius:5px;border:1px solid var(--border);font-size:12px;color:var(--txt-1);line-height:1.8;margin-bottom:14px">
+            <div style="margin-bottom:6px"><strong style="color:var(--cyan)">装备：</strong>${esc(equip)}</div>
+            <div style="margin-bottom:6px"><strong style="color:var(--cyan)">部署：</strong>${esc(deploy)}</div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="height:6px;background:rgba(0,180,216,.08);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${readiness}%;background:${readiness >= 85 ? 'var(--green)' : readiness >= 70 ? 'var(--cyan)' : 'var(--amber)'};border-radius:3px"></div>
+            </div>
+          </div>
+          ${domainScenarios.length ? `<div style="padding:10px;background:rgba(255,165,2,.04);border-radius:5px;border:1px solid rgba(255,165,2,.15);font-size:12px;margin-bottom:14px">
+            <div style="font-weight:700;color:var(--amber);margin-bottom:6px">🎮 关联推演场景</div>
+            ${domainScenarios.map(s => `<div style="margin-bottom:4px"><span style="cursor:pointer;color:var(--cyan)" onclick="App._launchThreatWargame('${s.id}')">▶ ${esc(s.name)}</span></div>`).join('')}
+          </div>` : ''}
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+            <button class="btn btn-sm" onclick="App.switchTab('forces')">📊 查看全部力量</button>
           </div>`);
       });
     });
@@ -996,7 +1072,7 @@ const App = {
     </div>`;
   },
 
-  /* ===== 角色专属推演模块 v13 — 训练课程体系 ===== */
+  /* ===== 角色专属推演模块 v13 — 推演课程体系 ===== */
   renderRoleModules(){
     const modules = (typeof RoleSystem !== 'undefined') ? RoleSystem.getModules() : [];
     const zp = (typeof RoleSystem !== 'undefined') ? RoleSystem.getProfile() : {};
@@ -1111,7 +1187,7 @@ const App = {
 
             <!-- 操作按钮 -->
             <div class="rmkt-actions">
-              <button class="rmkt-btn-start" onclick="event.stopPropagation();App.launchModule('${em.id}')">🚀 开始推演训练</button>
+              <button class="rmkt-btn-start" onclick="event.stopPropagation();App.launchModule('${em.id}')">🚀 启动推演</button>
               ${em.scenarioRefs.length ? `<button class="rmkt-btn-scenario" onclick="event.stopPropagation();App.switchTab('scenarios');setTimeout(()=>document.querySelector('[data-scenario=\\'${em.scenarioRefs[0]}\\']')?.scrollIntoView({behavior:'smooth'}),200)">🎯 查看关联场景</button>` : ''}
             </div>
           </div>
@@ -1138,7 +1214,7 @@ const App = {
     return `<div class="role-modules">
       <div class="rm-header">
         <div class="rm-header-left">
-          <h2 class="rm-header-title">🎮 ${zp.roleName}专属训练课程</h2>
+          <h2 class="rm-header-title">🎮 ${zp.roleName}专属推演课程</h2>
           <div class="rm-header-sub">
             共 <strong>${modules.length}</strong> 门训练课程，针对<span style="color:${roleColor};font-weight:700">${zp.roleName}</span>角色设计 ·
             <span style="color:var(--txt-2)">点击课程卡片进入详细训练教案，含知识讲解+案例分析+实战练习+自我检测</span>
@@ -1212,20 +1288,66 @@ const App = {
     fb.style.display = 'block';
   },
 
-  /* 启动推演模块 */
+  /* 启动推演模块 — 真实推演入口 */
   launchModule(moduleId){
     const modules = (typeof RoleSystem !== 'undefined') ? RoleSystem.getModules() : [];
     const mod = modules.find(m => m.id === moduleId);
     if(!mod) { alert('模块未找到'); return; }
     if(mod.scenarioRefs && mod.scenarioRefs.length > 0){
-      App.switchTab('scenarios');
-      setTimeout(() => {
-        const el = document.querySelector('[data-scenario=\'' + mod.scenarioRefs[0] + '\']');
-        if(el) el.scrollIntoView({behavior:'smooth'});
-      }, 300);
-    }else{
-      alert('🎮 ' + mod.name + ' 已准备就绪！\n\n该模块为独立训练模块，无需选择关联场景。\n请在专属训练标签页中开始操作。');
+      /* 直接启动导调阶段进入推演 */
+      const scenarioId = mod.scenarioRefs[0];
+      const scenario = (typeof SCENARIOS !== 'undefined') ? SCENARIOS.find(s => s.id === scenarioId) : null;
+      if(scenario && typeof Director !== 'undefined'){
+        /* 通过导调阶段进入推演 */
+        Director.start(scenario, { mode:'single', sideColor:'red' });
+      } else {
+        /* 回退：导航到场景列表 */
+        App.switchTab('scenarios');
+        setTimeout(() => {
+          const el = document.querySelector('[data-scenario=\'' + scenarioId + '\']');
+          if(el) el.scrollIntoView({behavior:'smooth'});
+        }, 300);
+      }
+    } else {
+      /* 无关联场景的模块：查找同域场景推荐推演 */
+      const modZones = mod.zones || [];
+      const domainMap = { zone_intel:'intel', zone_command:'military', zone_logistics:'logistics', zone_economy:'economic', zone_tech:'cyber' };
+      const domain = modZones.map(z => domainMap[z]).find(d => d) || 'military';
+      const relatedScenario = (typeof SCENARIOS !== 'undefined') ? SCENARIOS.find(s => s.domain === domain) : null;
+      if(relatedScenario && typeof Director !== 'undefined'){
+        this.showInfoModal('启动推演', mod.name, `
+          <div style="font-size:13px;color:var(--txt-1);line-height:1.8;margin-bottom:16px">
+            该模块关联域为<strong style="color:var(--cyan)">${domain}</strong>，推荐推演场景：<strong>${esc(relatedScenario.name)}</strong>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-sm" onclick="App._closeInfoModal()">取消</button>
+            <button class="btn btn-sm btn-red" onclick="App._closeInfoModal();Director.start((typeof SCENARIOS!=='undefined'?SCENARIOS.find(s=>s.id==='${relatedScenario.id}'):null),{mode:'single',sideColor:'red'})">▶ 启动推演</button>
+          </div>`);
+      } else {
+        alert('🎮 ' + mod.name + ' 暂无可用推演场景');
+      }
     }
+  },
+
+  /* 从威胁/雷达启动推演 */
+  _launchThreatWargame(scenarioId){
+    const scenario = (typeof SCENARIOS !== 'undefined') ? SCENARIOS.find(s => s.id === scenarioId) : null;
+    if(!scenario){ alert('场景未找到: ' + scenarioId); return; }
+    /* 关闭信息弹窗 */
+    const modal = document.getElementById('infoModal');
+    if(modal) modal.style.display = 'none';
+    /* 启动导调阶段 */
+    if(typeof Director !== 'undefined'){
+      Director.start(scenario, { mode:'single', sideColor:'red' });
+    } else {
+      App.switchTab('scenarios');
+    }
+  },
+
+  /* 关闭信息弹窗 */
+  _closeInfoModal(){
+    const modal = document.getElementById('infoModal');
+    if(modal) modal.style.display = 'none';
   },
 
   /* ===== 六域动画SVG生成 ===== */
@@ -1506,18 +1628,21 @@ const App = {
           <div class="sa-panel-head">
             <span class="sa-ph-icon">⚠️</span>
             <span class="sa-ph-title">威胁信息流</span>
-            <span class="sa-ph-count" id="saThreatCount">${activeThreats}条</span>
+            <span class="sa-ph-count" id="saThreatCount">${liveThreats.length}条</span>
           </div>
-          <div class="sa-feed-body">
-            ${liveThreats.slice(0,5).map(t => {
+          <div class="sa-feed-body" style="max-height:280px;overflow-y:auto">
+            ${liveThreats.map(t => {
               const sev = t.level === '严重' ? 5 : t.level === '较高' ? 4 : t.level === '中等' ? 3 : t.severity || 3;
               const cls = sev >= 5 ? 'sa-feed-urgent' : sev >= 4 ? 'sa-feed-high' : '';
               const tagColor = sev >= 5 ? 'var(--red)' : sev >= 4 ? 'var(--amber)' : 'var(--cyan)';
               const tagBg = sev >= 5 ? 'rgba(255,71,87,.15)' : sev >= 4 ? 'rgba(255,165,2,.15)' : 'rgba(0,180,216,.15)';
+              const threatId = t.id || '';
+              const threatType = t.type || t.domain || 'military';
+              const typeIcon = { military:'⚔️', cyber:'🌐', economic:'💰', diplomatic:'🤝', space:'🛰️', information:'📡' }[threatType] || '⚠️';
               return `
-              <div class="sa-feed-item ${cls}">
+              <div class="sa-feed-item ${cls}" data-threat-id="${threatId}" data-threat-type="${threatType}" data-threat-title="${esc(t.title || t.name || '')}">
                 <span class="sa-fi-time">${esc(t.time || '实时')}</span>
-                <span class="sa-fi-tag" style="background:${tagBg};color:${tagColor}">${t.value ? '值'+t.value : '威胁'+sev}</span>
+                <span class="sa-fi-tag" style="background:${tagBg};color:${tagColor}">${typeIcon} ${t.level || (sev >= 5 ? '严重' : sev >= 4 ? '较高' : '中等')}</span>
                 <span class="sa-fi-text">${esc(t.title || t.name)}</span>
               </div>`;
             }).join('')}
@@ -1529,6 +1654,7 @@ const App = {
           <div class="sa-panel-head">
             <span class="sa-ph-icon">🎯</span>
             <span class="sa-ph-title">力量部署</span>
+            <span class="sa-ph-hint" style="font-size:10px;color:var(--txt-2);margin-left:auto">点击节点查看详情</span>
           </div>
           <div class="sa-radar-body sa-force-radar">
             <svg width="120" height="120" viewBox="0 0 120 120" style="margin:0 auto">
@@ -1540,19 +1666,32 @@ const App = {
               <path d="M 60,60 L 60,5 A 55,55 0 0,1 108,38 Z" fill="rgba(0,180,216,.10)">
                 <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="4s" repeatCount="indefinite"/>
               </path>
-              ${liveForces.slice(0,6).map((f,i) => {
-                const ang = (i * 60 - 90) * Math.PI / 180;
-                const r = 30 + (f.readiness || 70) * 0.2;
+              ${liveForces.slice(0,8).map((f,i) => {
+                const ang = (i * 45 - 90) * Math.PI / 180;
+                const r = 28 + (f.readiness || 70) * 0.22;
                 const x = 60 + r * Math.cos(ang);
                 const y = 60 + r * Math.sin(ang);
-                return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#00b4d8" opacity=".8"/>`;
+                const nodeColor = (f.status === 'high_alert') ? '#ff4757' : (f.status === 'deployed' || f.status === 'active') ? '#2ed573' : '#00b4d8';
+                const nodeRadius = f.readiness >= 85 ? 4 : 3;
+                return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${nodeRadius}" fill="${nodeColor}" opacity=".85" style="cursor:pointer" data-force-code="${f.code || ''}" data-force-branch="${esc(f.branch || '')}" data-force-readiness="${f.readiness || 0}" data-force-status="${f.status || ''}" data-force-deploy="${esc(f.deployment || '')}" data-force-equip="${esc(f.equipment || '')}" data-force-domain="${f.domain || ''}">
+                  <title>${esc(f.branch || '')} — 战备${f.readiness || 0}%</title>
+                </circle>`;
               }).join('')}
               <circle cx="60" cy="60" r="4" fill="#00b4d8"/>
             </svg>
             <div class="sa-radar-stats">
-              <div class="sa-rs-item"><span class="sa-rs-label">战备力量</span><span class="sa-rs-val" style="color:var(--cyan)">${liveForces.length}</span></div>
-              <div class="sa-rs-item"><span class="sa-rs-label">已部署</span><span class="sa-rs-val" style="color:var(--green)">${liveForces.filter(f=>f.status==='deployed'||f.status==='active').length}</span></div>
-              <div class="sa-rs-item"><span class="sa-rs-label">高戒备</span><span class="sa-rs-val" style="color:var(--red)">${liveForces.filter(f=>f.status==='high_alert').length}</span></div>
+              <div class="sa-rs-item" style="cursor:pointer" onclick="App.switchTab('forces')">
+                <span class="sa-rs-label">战备力量</span>
+                <span class="sa-rs-val" style="color:var(--cyan)">${liveForces.length}</span>
+              </div>
+              <div class="sa-rs-item" style="cursor:pointer" onclick="App.switchTab('forces')">
+                <span class="sa-rs-label">已部署</span>
+                <span class="sa-rs-val" style="color:var(--green)">${liveForces.filter(f=>f.status==='deployed'||f.status==='active').length}</span>
+              </div>
+              <div class="sa-rs-item" style="cursor:pointer" onclick="App.switchTab('forces')">
+                <span class="sa-rs-label">高戒备</span>
+                <span class="sa-rs-val" style="color:var(--red)">${liveForces.filter(f=>f.status==='high_alert').length}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -4193,7 +4332,7 @@ const App = {
           <div style="margin-top:20px;padding:16px;background:rgba(8,20,40,.5);border-radius:6px;border:1px solid var(--border)">
             <div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:8px">系统信息</div>
             <div style="font-size:13px;color:var(--txt-1);line-height:2">
-              <div>版本：国家安全战略兵棋推演平台 v12.3 专业版</div>
+              <div>版本：国家安全战略兵棋推演平台 v12.4 专业版</div>
               <div>场景库：${SCENARIOS.length}个场景</div>
               <div>战略行动：${typeof STRATEGIC_ACTIONS !== 'undefined' ? STRATEGIC_ACTIONS.length : 0}项</div>
               <div>军种力量：${FORCES.length}个军种</div>

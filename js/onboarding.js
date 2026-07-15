@@ -1,5 +1,5 @@
 /* ================================================================
- * 国家安全战略兵棋推演平台 v12.3 — 系统引导与推演规划
+ * 国家安全战略兵棋推演平台 v12.4 — 系统引导与推演规划
  * ================================================================ */
 const Onboarding = {
 
@@ -11,7 +11,7 @@ const Onboarding = {
       id: 'welcome',
       icon: '\u{1F6E1}\uFE0F',
       title: '\u6B22\u8FCE\u8FDB\u5165\u56FD\u5BB6\u5B89\u5168\u6218\u7565\u5175\u68CB\u63A8\u6F14\u5E73\u53F0',
-      subtitle: 'v12.3',
+      subtitle: 'v12.4',
       content: `<div style="line-height:1.9;font-size:14px">
         <div style="text-align:center;margin-bottom:16px">
           <img src="assets/logo.png" alt="西南政法大学" style="max-width:200px;height:auto;filter:drop-shadow(0 0 8px rgba(0,180,216,.20))">

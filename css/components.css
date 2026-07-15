@@ -3285,7 +3285,7 @@
 .so-rec-item::before{content:'💡';position:absolute;left:12px;top:10px}
 
 /* ================================================================
- * AI战略智囊 — 人机协同样式 (v12.3)
+ * AI战略智囊 — 人机协同样式 (v12.4)
  * ================================================================ */
 
 /* === 推演界面中的AI智囊面板 === */
@@ -3458,7 +3458,7 @@
   .ai-dash-memory{flex-direction:column;gap:4px;text-align:center}
 }
 
-/* ===== v12.3 威胁上下文感知样式 ===== */
+/* ===== v12.4 威胁上下文感知样式 ===== */
 .threat-context-section{
   animation:fadeIn .4s ease;
 }

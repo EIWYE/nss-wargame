@@ -119,7 +119,12 @@ const Director = {
   genSituation(scenario){
     const dm = DOMAIN_MAP[scenario.domain] || DOMAIN_MAP.military;
     const domainData = DOMAINS.find(d => d.id === scenario.domain);
-    const threats = THREATS.filter(t => t.type === scenario.domain || scenario.response.includes(t.type));
+    /* 过滤相关威胁：场景域 + 响应域 + 高严重度全局威胁 */
+    const threats = THREATS.filter(t =>
+      t.type === scenario.domain ||
+      (scenario.response && scenario.response.includes(t.type)) ||
+      t.severity >= 4
+    );
     const forcesAvg = FORCES.reduce((s,f) => s + f.readiness, 0) / FORCES.length;
     return {
       background: scenario.background,
@@ -130,6 +135,7 @@ const Director = {
       domainTrend: domainData ? domainData.trend : 0,
       forcesAvg: Math.round(forcesAvg),
       threatCount: threats.length,
+      threatList: threats,  /* 返回完整威胁列表 */
       threatLevel: scenario.threatLevel,
       actors: scenario.actors,
       responseDomains: scenario.response.map(r => DOMAIN_MAP[r] || DOMAIN_MAP.military),
@@ -294,6 +300,38 @@ const Director = {
                 <span class="dir-actors-label">响应域：</span>
                 ${sit.responseDomains.map(r => `<span class="dir-actor-tag" style="background:${r.color}22;color:${r.color};border-color:${r.color}44">${r.icon} ${r.label}</span>`).join('')}
               </div>
+              <!-- 活跃威胁详细列表 -->
+              ${sit.threatList && sit.threatList.length > 0 ? `
+              <div style="margin-top:14px;padding:12px 14px;background:rgba(255,71,87,.04);border:1px solid rgba(255,71,87,.15);border-radius:8px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#ff4757;animation:pulse 1.5s infinite"></span>
+                  <span style="font-size:13px;font-weight:700;color:#ff4757">活跃威胁列表</span>
+                  <span style="font-size:11px;color:var(--txt-2);margin-left:auto">${sit.threatList.length}个威胁向量</span>
+                </div>
+                <div style="display:grid;gap:8px">
+                  ${sit.threatList.map(t => {
+                    const sevColor = t.severity >= 5 ? '#ff4757' : t.severity >= 4 ? '#ff6348' : t.severity >= 3 ? '#ffa502' : '#00b4d8';
+                    const sevLabel = t.severity >= 5 ? '极高' : t.severity >= 4 ? '高' : t.severity >= 3 ? '中' : '低';
+                    const statusLabel = t.status === 'escalating' ? '升级中' : t.status === 'active' ? '活跃' : t.status === 'monitoring' ? '监控中' : t.status || '';
+                    const statusColor = t.status === 'escalating' ? '#ff4757' : t.status === 'active' ? '#ff6348' : '#00b4d8';
+                    const typeIcon = { military:'⚔️', cyber:'🌐', economic:'💰', diplomatic:'🤝', space:'🛰️', information:'📡' }[t.type] || '⚠️';
+                    return `
+                    <div style="padding:8px 10px;background:rgba(8,20,40,.5);border:1px solid ${sevColor}22;border-left:3px solid ${sevColor};border-radius:6px;cursor:pointer;transition:all .2s"
+                      onclick="if(typeof Director!=='undefined'){Director._showThreatDetail('${t.id}')}"
+                      onmouseover="this.style.borderColor='${sevColor}55'"
+                      onmouseout="this.style.borderColor='${sevColor}22'">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <span style="padding:1px 6px;background:${sevColor}15;border:1px solid ${sevColor}33;border-radius:2px;font-size:9px;font-weight:700;color:${sevColor}">${sevLabel}</span>
+                        <span style="font-size:12px">${typeIcon}</span>
+                        <span style="font-size:12px;font-weight:600;color:var(--txt-0)">${esc2(t.title)}</span>
+                        <span style="margin-left:auto;padding:1px 6px;background:${statusColor}15;border:1px solid ${statusColor}33;border-radius:2px;font-size:9px;color:${statusColor}">${statusLabel}</span>
+                      </div>
+                      <div style="font-size:11px;color:var(--txt-2);margin-top:3px">📍 ${esc2(t.location)} · ⏱ ${esc2(t.time)}</div>
+                      <div style="font-size:11px;color:var(--txt-1);margin-top:2px;line-height:1.5">${esc2(t.desc)}</div>
+                    </div>`;
+                  }).join('')}
+                </div>
+              </div>` : '<div style="margin-top:10px;padding:10px;background:rgba(0,180,216,.04);border-radius:6px;font-size:12px;color:var(--txt-2)">当前无活跃威胁向量</div>'}
             </div>
           </div>
 
@@ -493,5 +531,79 @@ const Director = {
     document.querySelectorAll('.dir-fa-btn.minus').forEach(btn => {
       btn.addEventListener('click', () => this.reduceForce(btn.getAttribute('data-force')));
     });
+  },
+
+  /* ===== 显示威胁详情弹窗（联动推演） ===== */
+  _showThreatDetail(threatId){
+    const threat = (typeof THREATS !== 'undefined') ? THREATS.find(t => t.id === threatId) : null;
+    if(!threat) return;
+
+    const sevColor = threat.severity >= 5 ? '#ff4757' : threat.severity >= 4 ? '#ff6348' : '#ffa502';
+    const sevLabel = threat.severity >= 5 ? '极高' : threat.severity >= 4 ? '高' : '中';
+
+    // 查找威胁响应模板
+    const response = (typeof ThreatContext !== 'undefined') ? ThreatContext.getThreatResponse(threatId, threat.type) : null;
+    const relatedScenarioId = response ? response.relatedScenario : '';
+    const relatedScenario = relatedScenarioId ? (typeof SCENARIOS !== 'undefined' ? SCENARIOS.find(s => s.id === relatedScenarioId) : null) : null;
+
+    // 关联功能区
+    const relatedZones = [];
+    if(response && response.zones){
+      const zoneNames = { intel:'情报中心', command:'指挥中心', logistics:'后勤中心', economy:'经济中心', tech:'科技中心' };
+      Object.keys(response.zones).forEach(zid => {
+        const zcfg = (typeof ZONE_CONFIG !== 'undefined') ? ZONE_CONFIG[zid] : null;
+        relatedZones.push({ id:zid, name: zcfg ? zcfg.short : zoneNames[zid] || zid, color: zcfg ? zcfg.color : '#00b4d8' });
+      });
+    }
+
+    // 响应行动统计
+    let totalActions = 0;
+    if(response && response.zones){
+      Object.values(response.zones).forEach(zc => {
+        totalActions += (zc.collectionTasks || []).length + (zc.orders || []).length + (zc.actions || []).length;
+      });
+    }
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s';
+    modal.id = 'dirThreatModal';
+    modal.innerHTML = `
+      <div style="width:560px;max-width:90vw;max-height:80vh;overflow-y:auto;background:var(--bg-panel);border:1px solid ${sevColor}33;border-radius:12px;padding:0;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <span style="padding:3px 10px;background:${sevColor}15;border:1px solid ${sevColor}33;border-radius:3px;font-size:11px;font-weight:700;color:${sevColor}">${sevLabel}</span>
+          <span style="font-size:16px;font-weight:700;color:var(--txt-0)">${esc2(threat.title)}</span>
+          <button style="margin-left:auto;background:none;border:none;color:var(--txt-2);font-size:20px;cursor:pointer" onclick="document.getElementById('dirThreatModal').remove()">×</button>
+        </div>
+        <div style="padding:16px 20px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(255,71,87,.08);color:var(--red);border:1px solid rgba(255,71,87,.2)">📍 ${esc2(threat.location)}</span>
+            <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(0,180,216,.12);color:var(--cyan);border:1px solid var(--border-mid)">⏱ ${esc2(threat.time)}</span>
+            <span style="font-size:12px;padding:3px 10px;border-radius:3px;background:rgba(255,165,2,.08);color:var(--amber);border:1px solid rgba(255,165,2,.2)">⚡ 严重度 ${threat.severity}/5</span>
+          </div>
+          <div style="font-size:13px;color:var(--txt-1);line-height:1.8;margin-bottom:14px">${esc2(threat.desc)}</div>
+          ${relatedZones.length ? `<div style="padding:10px 12px;background:rgba(46,213,115,.04);border:1px solid rgba(46,213,115,.15);border-radius:6px;margin-bottom:14px">
+            <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">🔗 关联功能区（${totalActions}个响应行动可用）</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">${relatedZones.map(z => `<span style="display:inline-block;padding:3px 8px;margin:2px;background:${z.color}10;border:1px solid ${z.color}33;border-radius:3px;font-size:11px;color:${z.color};cursor:pointer" onclick="document.getElementById('dirThreatModal').remove();if(typeof App!=='undefined'){App.switchTab('zones');}if(typeof ZoneUI!=='undefined'){setTimeout(function(){ZoneUI.showDetail('${z.id}');},200);}">${z.name}</span>`).join('')}</div>
+          </div>` : ''}
+          ${relatedScenario ? `<div style="padding:10px 12px;background:rgba(255,71,87,.04);border:1px solid rgba(255,71,87,.15);border-radius:6px;margin-bottom:14px">
+            <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px">🎮 关联推演场景</div>
+            <div style="font-size:13px;color:var(--txt-0)">${esc2(relatedScenario.name)}</div>
+          </div>` : ''}
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-sm" onclick="document.getElementById('dirThreatModal').remove()">关闭</button>
+            ${relatedScenario ? `<button class="btn btn-sm btn-red" onclick="document.getElementById('dirThreatModal').remove();if(typeof Director!=='undefined'){Director._launchThreatScenario('${relatedScenarioId}')}">▶ 启动推演</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if(e.target === modal) modal.remove(); });
+  },
+
+  /* ===== 从威胁详情启动推演场景 ===== */
+  _launchThreatScenario(scenarioId){
+    const scenario = (typeof SCENARIOS !== 'undefined') ? SCENARIOS.find(s => s.id === scenarioId) : null;
+    if(!scenario) return;
+    /* 使用当前已有的sideInfo启动新场景 */
+    this.start(scenario, { mode:'single', sideColor:'red' });
   },
 };

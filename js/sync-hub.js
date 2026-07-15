@@ -1,5 +1,5 @@
 /**
- * NSS-WGS v12.3 — 全局状态同步中枢
+ * NSS-WGS v12.4 — 全局状态同步中枢
  * 职责：接收所有模块状态变更 → 传播到全局数据结构 → 触发UI刷新
  *
  * 这是系统的"中枢神经系统"，确保没有任何模块是数据孤岛。
@@ -342,8 +342,8 @@ const GlobalStateSync = {
     // 合并静态威胁中的其他项
     if(typeof THREATS !== 'undefined'){
       THREATS.forEach(t => {
-        if(!threats.find(dt => dt.name === t.name)){
-          threats.push({ ...t, levelColor: t.level === 4 ? 'var(--red)' : t.level === 3 ? 'var(--amber)' : t.level === 2 ? 'var(--cyan)' : 'var(--green)' });
+        if(!threats.find(dt => dt.id === t.id || dt.name === t.title)){
+          threats.push({ ...t, name: t.title, level: t.severity >= 5 ? '严重' : t.severity >= 4 ? '较高' : '中等', levelColor: t.severity >= 5 ? 'var(--red)' : t.severity >= 4 ? 'var(--amber)' : 'var(--cyan)' });
         }
       });
     }

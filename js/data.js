@@ -570,23 +570,53 @@ const DOMAINS = [
     metrics:{ 覆盖范围:'覆盖23国', 舆论态势:'正面62%', 进行中行动:'4场进行中' } },
 ];
 
-/* ===== 活跃威胁列表 ===== */
+/* ===== 活跃威胁列表（14个，覆盖六域） ===== */
 const THREATS = [
+  /* 军事域 */
   { id:'T-001', title:'台海方向兵力集结', location:'台湾海峡', severity:5,
     type:'military', time:'12分钟前', status:'escalating',
     desc:'探测到敌方航母战斗群进入预设海域，舰载机活动频繁' },
   { id:'T-002', title:'南海争议海域钻探', location:'万安滩附近', severity:4,
     type:'military', time:'47分钟前', status:'monitoring',
     desc:'某声索国钻井平台已就位，护卫舰编队护航中' },
-  { id:'T-003', title:'大规模高级持续性威胁攻击探测', location:'全国多节点', severity:4,
-    type:'cyber', time:'1小时前', status:'active',
-    desc:'关键信息基础设施遭受协同攻击，溯源分析进行中' },
   { id:'T-004', title:'边境兵力异常调动', location:'中印实控线', severity:3,
     type:'military', time:'2小时前', status:'monitoring',
     desc:'印方在争议地区增兵约3,000人，工程活动加速' },
+  { id:'T-007', title:'东海防空识别区入侵', location:'东海防空识别区', severity:4,
+    type:'military', time:'25分钟前', status:'active',
+    desc:'探测到多批不明军机进入防空识别区，已起飞战机拦截' },
+  /* 网络域 */
+  { id:'T-003', title:'大规模高级持续性威胁攻击探测', location:'全国多节点', severity:4,
+    type:'cyber', time:'1小时前', status:'active',
+    desc:'关键信息基础设施遭受协同攻击，溯源分析进行中' },
+  { id:'T-008', title:'金融系统网络渗透', location:'银行结算系统', severity:4,
+    type:'cyber', time:'35分钟前', status:'escalating',
+    desc:'检测到针对银行结算系统的渗透行为，交易异常波动' },
+  /* 经济域 */
   { id:'T-005', title:'芯片出口管制升级', location:'全球供应链', severity:3,
     type:'economic', time:'3小时前', status:'active',
     desc:'某大国将14nm以下制程设备纳入管制清单，影响12家中国企业' },
+  { id:'T-009', title:'能源进口通道受阻', location:'马六甲海峡', severity:4,
+    type:'economic', time:'1小时前', status:'active',
+    desc:'域外海军力量在马六甲海峡加强检查，油轮通行延迟48小时' },
+  { id:'T-010', title:'稀土供应链围堵', location:'多国联动', severity:3,
+    type:'economic', time:'5小时前', status:'monitoring',
+    desc:'某大国联合盟友建立稀土替代供应链，试图削弱中国定价权' },
+  /* 外交域 */
+  { id:'T-011', title:'多边联盟围堵升级', location:'印太地区', severity:4,
+    type:'diplomatic', time:'50分钟前', status:'escalating',
+    desc:'某大国推动印太安全联盟扩员，拟将4国纳入联合军演框架' },
+  { id:'T-012', title:'国际组织话语权挤压', location:'联合国体系', severity:3,
+    type:'diplomatic', time:'2小时前', status:'active',
+    desc:'某大国在多个国际组织推动涉华提案，试图重塑规则话语权' },
+  /* 太空域 */
+  { id:'T-013', title:'在轨侦察卫星抵近', location:'地球同步轨道', severity:4,
+    type:'space', time:'18分钟前', status:'active',
+    desc:'探测到3颗异常轨道卫星抵近我方通信卫星，疑为侦察干扰平台' },
+  { id:'T-014', title:'GPS欺骗攻击', location:'西北地区', severity:3,
+    type:'space', time:'1小时前', status:'monitoring',
+    desc:'西北多地的导航信号出现异常偏移，疑遭卫星导航欺骗攻击' },
+  /* 信息域 */
   { id:'T-006', title:'舆论操纵活动检测', location:'社交媒体平台', severity:3,
     type:'information', time:'4小时前', status:'active',
     desc:'检测到协调性虚假信息传播，目标为涉华议题' },

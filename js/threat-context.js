@@ -1,5 +1,5 @@
 /**
- * NSS-WGS v12.3 — 威胁上下文感知引擎 (Threat Context-Aware Engine)
+ * NSS-WGS v12.4 — 威胁上下文感知引擎 (Threat Context-Aware Engine)
  *
  * 核心理念: 当威胁存在时，功能区必须"看到"威胁、"响应"威胁
  *   威胁 → 功能区感知 → 下达专属任务/指令 → 跨域传导 → 威胁态势变化
@@ -372,6 +372,210 @@ const THREAT_RESPONSES = {
             effects:{tech:{cognitive:15,innovation:5}}, propagation:{}, synergy:{intel:2,economy:2} },
         ],
       },
+    },
+  },
+
+  /* ---- T-007: 东海防空识别区入侵 ---- */
+  'T-007': {
+    title: '东海防空识别区入侵', severity: 4, type: 'military', relatedScenario: 'east_china_sea',
+    zones: {
+      intel: {
+        intelligence: [
+          { source:'雷达情报', reliability:'A', time:'25分钟前', content:'多批不明军机进入东海防空识别区，航线指向钓鱼岛方向' },
+          { source:'信号情报', reliability:'B', time:'30分钟前', content:'截获战机编队加密通信，分析为某大国舰载机联队' },
+        ],
+        collectionTasks: [
+          { id:'ct007-1', name:'空中态势全谱侦察', desc:'调集预警机和电子侦察机对入侵编队进行全谱侦察', cost:2,
+            effects:{intel:{collection:12,warning:10}}, propagation:{command:'空中态势确认，入侵编队为2架轰炸机+4架战斗机'}, synergy:{command:4,tech:3} },
+          { id:'ct007-2', name:'后方基地意图研判', desc:'分析入侵编队后方基地的活动意图', cost:2,
+            effects:{intel:{analysis:12}}, propagation:{command:'研判确认此次为试探性挑衅，非军事进攻前兆'}, synergy:{command:3} },
+        ],
+      },
+      command: {
+        orders: [
+          { id:'ord007-1', name:'战机紧急起飞拦截', desc:'命令东部战区空军起飞歼-16编队进行拦截', cost:2,
+            effects:{command:{readiness:10,deployment:8}}, propagation:{logistics:'战机拦截需要加油机保障'}, synergy:{logistics:4,tech:2} },
+          { id:'ord007-2', name:'防空导弹系统待命', desc:'命令防空导弹系统进入待命状态', cost:2,
+            effects:{command:{readiness:8}}, propagation:{}, synergy:{tech:2} },
+        ],
+      },
+      logistics: { actions: [
+        { id:'lg007-1', name:'空中加油保障', desc:'派遣加油机保障拦截编队长时间巡逻', cost:2,
+          effects:{logistics:{projection:10,supply:5}}, propagation:{command:'加油保障就绪，拦截编队可持续巡逻4小时'}, synergy:{command:4} },
+      ]},
+      economy: { actions: [
+        { id:'ec007-1', name:'航线保险评估', desc:'评估防空事件对东海航线保险费率的影响', cost:1,
+          effects:{economy:{resilience:5}}, propagation:{}, synergy:{intel:2} },
+      ]},
+      tech: { actions: [
+        { id:'tc007-1', name:'电子侦察加强', desc:'加强电子侦察监控入侵编队通信和雷达', cost:2,
+          effects:{tech:{cyber:10,innovation:3}}, propagation:{intel:'电子侦察截获关键通信特征'}, synergy:{intel:4,command:2} },
+      ]},
+    },
+  },
+
+  /* ---- T-008: 金融系统网络渗透 ---- */
+  'T-008': {
+    title: '金融系统网络渗透', severity: 4, type: 'cyber', relatedScenario: 'cyber_attack',
+    zones: {
+      intel: {
+        intelligence: [
+          { source:'网络情报', reliability:'A', time:'35分钟前', content:'检测到针对银行结算系统的渗透行为，攻击手法关联某国网络战部队' },
+          { source:'开源情报', reliability:'B', time:'40分钟前', content:'银行间交易出现异常延迟，疑似网络攻击影响' },
+        ],
+        collectionTasks: [
+          { id:'ct008-1', name:'攻击路径溯源', desc:'对渗透行为进行全栈溯源锁定攻击路径', cost:3,
+            effects:{intel:{analysis:15,warning:8}}, propagation:{tech:'溯源结果传递给科技中心进行精准防御',command:'确认攻击来自某国网络战部队'}, synergy:{tech:5,command:3} },
+          { id:'ct008-2', name:'金融影响评估', desc:'评估网络渗透对金融市场的潜在影响', cost:2,
+            effects:{intel:{analysis:10,warning:10}}, propagation:{economy:'评估完成，交易系统暂未受损但风险高'}, synergy:{economy:4} },
+        ],
+      },
+      command: {
+        orders: [
+          { id:'ord008-1', name:'金融系统安全令', desc:'发布金融系统安全令启动应急响应', cost:2,
+            effects:{command:{readiness:8,coordination:5}}, propagation:{tech:'安全令启动网络部队配合科技中心防御'}, synergy:{tech:4} },
+        ],
+      },
+      logistics: { actions: [
+        { id:'lg008-1', name:'灾备系统切换', desc:'启动金融灾备数据中心切换', cost:2,
+          effects:{logistics:{supply:10,reserve:5}}, propagation:{tech:'灾备系统切换完成，交易恢复正常'}, synergy:{tech:3,economy:3} },
+      ]},
+      economy: { actions: [
+        { id:'ec008-1', name:'交易系统加固', desc:'加固银行结算和证券交易系统网络防御', cost:2,
+          effects:{economy:{resilience:12,independence:5}}, propagation:{tech:'交易系统加固完成'}, synergy:{tech:4} },
+        { id:'ec008-2', name:'市场稳定干预', desc:'启动市场稳定机制防止恐慌性抛售', cost:2,
+          effects:{economy:{resilience:10}}, propagation:{}, synergy:{intel:2} },
+      ]},
+      tech: { actions: [
+        { id:'tc008-1', name:'金融网络防御升级', desc:'全面升级金融网络防护等级', cost:3,
+          effects:{tech:{cyber:15,innovation:5}}, propagation:{command:'金融网络防御升级完成',economy:'防护成功率提升至99.5%'}, synergy:{command:3,economy:4} },
+        { id:'tc008-2', name:'攻击反制', desc:'基于溯源结果实施精准网络反制', cost:3,
+          effects:{tech:{cyber:12,innovation:8}}, propagation:{intel:'反制成功瘫痪敌方部分攻击节点'}, synergy:{intel:4,command:2} },
+      ]},
+    },
+  },
+
+  /* ---- T-009: 能源进口通道受阻 ---- */
+  'T-009': {
+    title: '能源进口通道受阻', severity: 4, type: 'economic', relatedScenario: 'eco_sanctions',
+    zones: {
+      intel: {
+        intelligence: [
+          { source:'开源情报', reliability:'A', time:'1小时前', content:'域外海军力量在马六甲海峡加强检查，油轮通行延迟48小时' },
+          { source:'信号情报', reliability:'B', time:'1.5小时前', content:'截获域外海军通信，检查行动为"例行安全检查"' },
+        ],
+        collectionTasks: [
+          { id:'ct009-1', name:'通道受阻影响评估', desc:'评估马六甲海峡受阻对能源进口的具体影响', cost:2,
+            effects:{intel:{analysis:12,warning:8}}, propagation:{economy:'评估完成，每日影响原油进口约80万桶',command:'能源安全面临中等风险'}, synergy:{economy:4,command:3} },
+          { id:'ct009-2', name:'域外意图研判', desc:'分析域外海军加强检查的真实意图', cost:2,
+            effects:{intel:{analysis:10}}, propagation:{command:'研判为试探性施压，非全面封锁前兆'}, synergy:{command:3} },
+        ],
+      },
+      command: {
+        orders: [
+          { id:'ord009-1', name:'海军护航编队出动', desc:'命令海军护航编队赴马六甲海峡保障油轮安全', cost:3,
+            effects:{command:{deployment:10,readiness:5}}, propagation:{logistics:'护航编队需要远海补给保障'}, synergy:{logistics:5,tech:2} },
+          { id:'ord009-2', name:'战略石油储备启动', desc:'启动战略石油储备保障国内供应', cost:2,
+            effects:{command:{coordination:8}}, propagation:{economy:'战略石油储备启动，国内供应不受影响'}, synergy:{economy:4,logistics:3} },
+        ],
+      },
+      logistics: { actions: [
+        { id:'lg009-1', name:'替代运输线路规划', desc:'规划中缅油气管道和北极航线等替代运输', cost:2,
+          effects:{logistics:{projection:12,supply:8}}, propagation:{economy:'替代线路可覆盖60%受阻运量'}, synergy:{economy:4} },
+        { id:'lg009-2', name:'能源储备扩充', desc:'扩充原油和成品油战略储备', cost:2,
+          effects:{logistics:{reserve:15}}, propagation:{command:'能源储备扩充完成，可支撑45天需求'}, synergy:{command:3,economy:3} },
+      ]},
+      economy: { actions: [
+        { id:'ec009-1', name:'能源进口多元化', desc:'加速从中东、俄罗斯、非洲多元化能源进口', cost:3,
+          effects:{economy:{independence:12,resilience:8}}, propagation:{logistics:'多元化进口需要配套物流设施'}, synergy:{logistics:4} },
+        { id:'ec009-2', name:'新能源替代加速', desc:'加速新能源发展降低化石能源依赖', cost:3,
+          effects:{economy:{independence:10,resilience:10}}, propagation:{tech:'新能源发展需要技术攻关支持'}, synergy:{tech:4} },
+      ]},
+      tech: { actions: [
+        { id:'tc009-1', name:'管道运输技术升级', desc:'升级中缅油气管道运输效率', cost:2,
+          effects:{tech:{innovation:10}}, propagation:{logistics:'管道运输效率提升20%'}, synergy:{logistics:3,economy:3} },
+      ]},
+    },
+  },
+
+  /* ---- T-011: 多边联盟围堵升级 ---- */
+  'T-011': {
+    title: '多边联盟围堵升级', severity: 4, type: 'diplomatic', relatedScenario: 'cognitive_war',
+    zones: {
+      intel: {
+        intelligence: [
+          { source:'外交情报', reliability:'A', time:'50分钟前', content:'某大国推动印太安全联盟扩员，拟将4国纳入联合军演框架' },
+          { source:'开源情报', reliability:'B', time:'1小时前', content:'联盟峰会联合声明草案包含多项涉华条款' },
+        ],
+        collectionTasks: [
+          { id:'ct011-1', name:'联盟内部分歧分析', desc:'分析联盟成员国在对华政策上的内部分歧', cost:2,
+            effects:{intel:{analysis:12}}, propagation:{command:'分析发现3个成员国对扩员有保留意见',economy:'部分成员国担忧经济脱钩代价'}, synergy:{command:3,economy:3} },
+          { id:'ct011-2', name:'扩员影响评估', desc:'评估联盟扩员对国家安全的具体影响', cost:2,
+            effects:{intel:{analysis:10,warning:8}}, propagation:{command:'扩员将增加方向军事压力20%'}, synergy:{command:4} },
+        ],
+      },
+      command: {
+        orders: [
+          { id:'ord011-1', name:'军事外交沟通', desc:'通过军事外交渠道与联盟成员国沟通防止误判', cost:1,
+            effects:{command:{coordination:8}}, propagation:{}, synergy:{intel:3} },
+          { id:'ord011-2', name:'战略威慑展示', desc:'举行针对性军事演习展示战略威慑能力', cost:3,
+            effects:{command:{readiness:8,deployment:10}}, propagation:{logistics:'军演需要后勤保障支援'}, synergy:{logistics:4,tech:2} },
+        ],
+      },
+      logistics: { actions: [
+        { id:'lg011-1', name:'军演物资保障', desc:'为针对性军演提供物资保障', cost:2,
+          effects:{logistics:{projection:10,supply:5}}, propagation:{command:'军演物资保障就绪'}, synergy:{command:3} },
+      ]},
+      economy: { actions: [
+        { id:'ec011-1', name:'经济合作分化', desc:'利用经济合作分化联盟成员国', cost:2,
+          effects:{economy:{firepower:12,independence:5}}, propagation:{intel:'经济分化策略有效，2个成员国态度软化'}, synergy:{intel:4} },
+        { id:'ec011-2', name:'区域经济整合加速', desc:'加速RCEP等区域经济合作框架整合', cost:3,
+          effects:{economy:{independence:10,resilience:8}}, propagation:{}, synergy:{diplomatic:3} },
+      ]},
+      tech: { actions: [
+        { id:'tc011-1', name:'技术合作外交', desc:'通过技术合作外交吸引联盟成员国', cost:2,
+          effects:{tech:{innovation:8}}, propagation:{economy:'技术合作外交初见成效'}, synergy:{economy:3} },
+      ]},
+    },
+  },
+
+  /* ---- T-013: 在轨侦察卫星抵近 ---- */
+  'T-013': {
+    title: '在轨侦察卫星抵近', severity: 4, type: 'space', relatedScenario: 'space_domain',
+    zones: {
+      intel: {
+        intelligence: [
+          { source:'太空情报', reliability:'A', time:'18分钟前', content:'探测到3颗异常轨道卫星抵近我方通信卫星，疑为侦察干扰平台' },
+          { source:'信号情报', reliability:'B', time:'25分钟前', content:'抵近卫星发射异常信号，频谱分析指向干扰企图' },
+        ],
+        collectionTasks: [
+          { id:'ct013-1', name:'轨道精确定轨', desc:'对抵近卫星进行精确定轨和意图分析', cost:2,
+            effects:{intel:{analysis:12,warning:10}}, propagation:{tech:'精确定轨完成，3颗卫星为某大国侦察卫星',command:'太空态势评估更新，威胁等级中等'}, synergy:{tech:4,command:3} },
+          { id:'ct013-2', name:'信号特征分析', desc:'分析抵近卫星信号特征确认干扰企图', cost:2,
+            effects:{intel:{analysis:10,collection:8}}, propagation:{tech:'信号特征分析完成，确认干扰频段'}, synergy:{tech:4} },
+        ],
+      },
+      command: {
+        orders: [
+          { id:'ord013-1', name:'军事航天部队戒备', desc:'命令军事航天部队提升戒备等级', cost:2,
+            effects:{command:{readiness:10}}, propagation:{tech:'航天部队戒备完成，可随时采取行动'}, synergy:{tech:4} },
+          { id:'ord013-2', name:'卫星变轨规避', desc:'命令受影响通信卫星变轨规避', cost:2,
+            effects:{command:{deployment:8,readiness:5}}, propagation:{logistics:'卫星变轨需要测控保障'}, synergy:{logistics:3,tech:3} },
+        ],
+      },
+      logistics: { actions: [
+        { id:'lg013-1', name:'测控网加强', desc:'加强测控网对受影响卫星的监控', cost:2,
+          effects:{logistics:{supply:8,projection:5}}, propagation:{tech:'测控网加强完成，卫星状态实时监控'}, synergy:{tech:3} },
+      ]},
+      economy: { actions: [] },
+      tech: { actions: [
+        { id:'tc013-1', name:'卫星防护部署', desc:'加强在轨卫星电子防护和抗干扰措施', cost:3,
+          effects:{tech:{cyber:15,innovation:8}}, propagation:{command:'卫星防护部署完成，通信不受影响'}, synergy:{command:3,intel:2} },
+        { id:'tc013-2', name:'反制卫星待命', desc:'反制卫星进入待命状态准备对等反制', cost:3,
+          effects:{tech:{cyber:12,innovation:10}}, propagation:{command:'反制卫星待命，可随时实施对等反制'}, synergy:{command:4} },
+        { id:'tc013-3', name:'太空态势感知加强', desc:'部署太空态势感知系统加强轨道监控', cost:2,
+          effects:{tech:{innovation:10,cyber:5}}, propagation:{intel:'太空态势感知加强，可追踪所有抵近卫星'}, synergy:{intel:4} },
+      ]},
     },
   },
 };
@@ -1025,7 +1229,7 @@ const ThreatContext = {
     if(!threats.length) return '';
 
     const stats = this.getResponseStats();
-    const topThreats = threats.slice(0, 3);
+    const topThreats = threats.slice(0, 4);
     const recentProp = this._state.propagationLog.slice(0, 3);
 
     return `
@@ -1042,25 +1246,48 @@ const ThreatContext = {
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px">
         ${topThreats.map(t => {
           const progress = this._getThreatProgress(t.id);
           const sevColor = t.severity >= 5 ? '#ff4757' : t.severity >= 4 ? '#ff6348' : t.severity >= 3 ? '#ffa502' : '#00b4d8';
           const statusColor = progress.status === 'contained' ? '#2ed573' : progress.status === 'responding' ? '#00b4d8' : '#ff4757';
           const pct = progress.totalAvailable > 0 ? Math.round(progress.responsesIssued / progress.totalAvailable * 100) : 0;
+
+          // 查找关联场景
+          const response = this.getThreatResponse(t.id, t.type);
+          const relatedScenarioId = response ? response.relatedScenario : '';
+          const relatedScenario = relatedScenarioId && typeof SCENARIOS !== 'undefined' ? SCENARIOS.find(s => s.id === relatedScenarioId) : null;
+
+          // 查找关联功能区
+          const relatedZones = [];
+          if(response && response.zones){
+            Object.keys(response.zones).forEach(zid => {
+              const zcfg = (typeof ZONE_CONFIG !== 'undefined') ? ZONE_CONFIG[zid] : null;
+              if(zcfg) relatedZones.push({ id:zid, short:zcfg.short, color:zcfg.color });
+            });
+          }
+
+          const typeIcon = { military:'⚔️', cyber:'🌐', economic:'💰', diplomatic:'🤝', space:'🛰️', information:'📡' }[t.type] || '⚠️';
+
           return `
-          <div style="padding:10px;background:rgba(8,20,40,.5);border:1px solid ${sevColor}22;border-left:3px solid ${sevColor};border-radius:6px;cursor:pointer;transition:all .2s"
-            onclick="if(typeof App!=='undefined'){App.switchTab('zones');}if(typeof ZoneUI!=='undefined'){setTimeout(function(){ZoneUI.showDetail('intel');},200);}"
-            onmouseover="this.style.borderColor='${sevColor}55'"
-            onmouseout="this.style.borderColor='${sevColor}22'">
-            <div style="font-size:12px;font-weight:600;color:var(--txt-0);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <div style="padding:10px 12px;background:rgba(8,20,40,.5);border:1px solid ${sevColor}22;border-left:3px solid ${sevColor};border-radius:6px;transition:all .2s">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+              <span style="font-size:11px">${typeIcon}</span>
+              <span style="font-size:12px;font-weight:600;color:var(--txt-0);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</span>
+              <span style="font-size:9px;padding:1px 5px;background:${statusColor}15;border:1px solid ${statusColor}33;border-radius:2px;color:${statusColor}">${progress.status === 'contained' ? '已遏制' : progress.status === 'responding' ? '响应中' : '活跃'}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
               <div style="flex:1;height:3px;background:rgba(0,180,216,.08);border-radius:2px;overflow:hidden">
                 <div style="height:100%;width:${pct}%;background:${statusColor};border-radius:2px;transition:width .3s"></div>
               </div>
               <span style="font-size:9px;color:${statusColor}">${pct}%</span>
             </div>
-            <div style="font-size:10px;color:var(--txt-2)">${t.location || ''} · ${progress.responsesIssued}/${progress.totalAvailable}行动</div>
+            <div style="font-size:10px;color:var(--txt-2);margin-bottom:6px">${t.location || ''} · ${progress.responsesIssued}/${progress.totalAvailable}行动</div>
+            <!-- 快速响应按钮组 -->
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              ${relatedZones.slice(0,3).map(z => `<button onclick="if(typeof App!=='undefined'){App.switchTab('zones');}if(typeof ZoneUI!=='undefined'){setTimeout(function(){ZoneUI.showDetail('${z.id}');},200);}" style="font-size:9px;padding:2px 6px;background:${z.color}10;border:1px solid ${z.color}33;border-radius:2px;color:${z.color};cursor:pointer;transition:all .15s" onmouseover="this.style.background='${z.color}20'" onmouseout="this.style.background='${z.color}10'">${z.short}</button>`).join('')}
+              ${relatedScenario ? `<button onclick="App._launchThreatWargame('${relatedScenarioId}')" style="font-size:9px;padding:2px 6px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);border-radius:2px;color:#ff4757;cursor:pointer;transition:all .15s" onmouseover="this.style.background='rgba(255,71,87,.2)'" onmouseout="this.style.background='rgba(255,71,87,.1)'">🎮 推演</button>` : ''}
+            </div>
           </div>`;
         }).join('')}
       </div>
@@ -1108,10 +1335,11 @@ const ThreatContext = {
           if(zcfg) relatedZones.push(zcfg);
         });
       }
+      const relatedScenarioId = response ? response.relatedScenario : '';
+      const relatedScenario = relatedScenarioId && typeof SCENARIOS !== 'undefined' ? SCENARIOS.find(s => s.id === relatedScenarioId) : null;
 
       return `
-      <div class="threat-response-card" style="padding:10px 14px;background:rgba(8,20,40,.5);border:1px solid ${sevColor}33;border-left:3px solid ${sevColor};border-radius:6px;margin-bottom:8px;cursor:pointer;transition:all .2s"
-        onclick="ZoneUI.showDetail('${relatedZones[0] ? relatedZones[0].id : 'intel'}')"
+      <div class="threat-response-card" style="padding:10px 14px;background:rgba(8,20,40,.5);border:1px solid ${sevColor}33;border-left:3px solid ${sevColor};border-radius:6px;margin-bottom:8px;transition:all .2s"
         onmouseover="this.style.borderColor='${sevColor}66'"
         onmouseout="this.style.borderColor='${sevColor}33'">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1126,7 +1354,10 @@ const ThreatContext = {
           </div>
           <span style="font-size:10px;color:var(--txt-2)">${progressPct}%</span>
         </div>
-          ${relatedZones.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${relatedZones.map(z => `<span style="font-size:9px;padding:2px 6px;background:${z.color}10;border:1px solid ${z.color}33;border-radius:2px;color:${z.color}">${z.icon} ${z.short}</span>`).join('')}</div>` : ''}
+        <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+          ${relatedZones.length ? relatedZones.map(z => `<button onclick="ZoneUI.showDetail('${z.id}')" style="font-size:9px;padding:2px 6px;background:${z.color}10;border:1px solid ${z.color}33;border-radius:2px;color:${z.color};cursor:pointer">${z.icon} ${z.short}</button>`).join('') : ''}
+          ${relatedScenario ? `<button onclick="if(typeof App!=='undefined'){App._launchThreatWargame('${relatedScenarioId}')}" style="font-size:9px;padding:2px 6px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);border-radius:2px;color:#ff4757;cursor:pointer">🎮 启动推演</button>` : ''}
+        </div>
       </div>`;
     }).join('');
 
