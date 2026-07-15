@@ -2405,6 +2405,19 @@ const StrategicOps = {
       }, 'strategic');
     }
 
+    /* === AI智囊：记录综合推演结果到战略记忆 === */
+    if(typeof AIAdvisor !== 'undefined' && STRATEGIC_STATE.scenarioResults.length > 0){
+      AIAdvisor.recordGameResult({
+        scenarioId: STRATEGIC_STATE.activeChain,
+        scenarioName: chain.name + ' (综合推演)',
+        score: STRATEGIC_STATE.finalAssessment?.avgScore || 50,
+        grade: STRATEGIC_STATE.finalAssessment?.grade || 'B',
+        playerActions: [],
+        escalation: STRATEGIC_STATE.scenarioResults[STRATEGIC_STATE.scenarioResults.length - 1]?.escalation || 1,
+        rounds: STRATEGIC_STATE.scenarioResults.length,
+      });
+    }
+
     STRATEGIC_STATE.phase = 'analysis';
     App.switchTab('zone_strategic');
   },

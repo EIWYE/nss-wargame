@@ -1488,6 +1488,9 @@ const App = {
       </div>
     </div>
 
+    <!-- ===== AI战略智囊 (人机协同) ===== -->
+    ${(typeof AIAdvisor !== 'undefined') ? AIAdvisor.renderDashboardWidget() : ''}
+
     <!-- ===== 态势感知动态面板 ===== -->
     <div class="sa-container fade-in" style="margin-bottom:16px">
       <div class="sa-header">

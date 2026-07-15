@@ -1827,6 +1827,121 @@ const Wargame = {
   /* ===== 确认行动 → 骰子裁决 → AI响应 ===== */
   confirmActions(){
     if(this.state.selectedActions.length === 0 && this.state.selectedSupportActions.length === 0) return;
+
+    /* === 人机协同：AI预测检查点 === */
+    if(typeof AIAdvisor !== 'undefined' && this.state.selectedActions.length > 0){
+      this._showAIPredictionGate();
+      return;
+    }
+
+    /* 无AI智囊时直接执行 */
+    this._resolveActions();
+  },
+
+  /* ===== AI预测检查点 — 人机协同决策门 ===== */
+  _showAIPredictionGate(){
+    const s = this.state;
+    const allActions = [...s.selectedSupportActions, ...s.selectedActions];
+    const prediction = AIAdvisor.predictImpact(s.selectedActions, s);
+
+    /* 构建预测面板 */
+    const overlay = document.createElement('div');
+    overlay.className = 'ai-gate-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s';
+
+    let predHTML = '<div class="ai-gate-modal" style="background:var(--bg-panel);border:1px solid rgba(0,180,216,.3);border-radius:8px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;padding:20px">';
+    predHTML += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+    predHTML += '<span style="font-size:20px">🤖</span>';
+    predHTML += '<span style="font-size:15px;font-weight:700;color:var(--cyan)">AI战略智囊 · 行动前预测</span>';
+    predHTML += '<span style="flex:1"></span>';
+    predHTML += '<span style="font-size:11px;color:var(--txt-2)">人机协同决策门</span>';
+    predHTML += '</div>';
+
+    /* 预测摘要 */
+    predHTML += '<div style="padding:10px 12px;background:rgba(0,180,216,.04);border-radius:4px;margin-bottom:10px;font-size:12px;color:var(--txt-1);line-height:1.6">' + prediction.summary + '</div>';
+
+    /* 预警 */
+    if(prediction.warnings.length > 0){
+      predHTML += '<div style="margin-bottom:10px">';
+      predHTML += '<div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px">⚠️ 风险预警</div>';
+      prediction.warnings.forEach(w => {
+        predHTML += '<div style="font-size:11px;color:var(--amber);padding:4px 8px;margin-bottom:2px;background:rgba(255,165,2,.06);border-radius:3px">' + w + '</div>';
+      });
+      predHTML += '</div>';
+    }
+
+    /* 正面效果 */
+    if(prediction.positives.length > 0){
+      predHTML += '<div style="margin-bottom:10px">';
+      predHTML += '<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ 预期收益</div>';
+      predHTML += '<div style="font-size:11px;color:var(--green);padding:4px 8px;background:rgba(46,213,115,.06);border-radius:3px">' + prediction.positives.join(' · ') + '</div>';
+      predHTML += '</div>';
+    }
+
+    /* 逐行动预测 */
+    predHTML += '<div style="margin-bottom:10px">';
+    predHTML += '<div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:6px">📊 逐行动预测</div>';
+    prediction.predictions.forEach(p => {
+      const srColor = p.successRate >= 70 ? 'var(--green)' : p.successRate >= 50 ? 'var(--amber)' : 'var(--red)';
+      predHTML += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;background:rgba(8,20,40,.4);border-radius:3px">';
+      predHTML += '<span style="font-size:12px;color:var(--txt-0);flex:1">' + p.actionName + '</span>';
+      predHTML += '<span style="font-size:11px;color:' + srColor + ';font-family:Consolas,monospace">成功率' + p.successRate + '%</span>';
+      predHTML += '<span style="font-size:10px;color:var(--txt-2)">' + p.riskLabel + '</span>';
+      predHTML += '</div>';
+      /* 连锁反应 */
+      if(p.chains.length > 0){
+        p.chains.forEach(c => {
+          predHTML += '<div style="font-size:10px;color:var(--amber);padding:2px 8px 2px 20px;margin-bottom:2px">↳ ' + c.desc + '</div>';
+        });
+      }
+    });
+    predHTML += '</div>';
+
+    /* 投射状态 */
+    predHTML += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
+    const proj = prediction.projected;
+    const items = [
+      { label:'升级度', value: proj.escalation, color: proj.escalation >= 4 ? 'var(--red)' : proj.escalation >= 3 ? 'var(--amber)' : 'var(--cyan)' },
+      { label:'声望', value: proj.reputation, color: proj.reputation < 30 ? 'var(--red)' : 'var(--green)' },
+      { label:'国内支持', value: proj.domesticSupport, color: proj.domesticSupport < 35 ? 'var(--red)' : 'var(--green)' },
+      { label:'剩余资金', value: proj.funding + '亿', color: proj.funding < 200 ? 'var(--red)' : 'var(--amber)' },
+    ];
+    items.forEach(it => {
+      predHTML += '<div style="text-align:center;padding:6px 4px;background:rgba(8,20,40,.4);border-radius:3px">';
+      predHTML += '<div style="font-size:10px;color:var(--txt-2)">' + it.label + '</div>';
+      predHTML += '<div style="font-size:14px;font-weight:700;color:' + it.color + ';font-family:Consolas,monospace">' + it.value + '</div>';
+      predHTML += '</div>';
+    });
+    predHTML += '</div>';
+
+    /* 操作按钮 */
+    predHTML += '<div style="display:flex;gap:8px;justify-content:flex-end">';
+    predHTML += '<button id="aiGateBack" style="padding:8px 16px;border:1px solid var(--border-mid);background:rgba(8,20,40,.5);color:var(--txt-1);border-radius:4px;cursor:pointer;font-size:13px">← 返回调整</button>';
+    predHTML += '<button id="aiGateConfirm" style="padding:8px 20px;border:none;background:var(--cyan);color:#0a0e1a;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600">确认执行 ▶</button>';
+    predHTML += '</div>';
+    predHTML += '</div>';
+
+    overlay.innerHTML = predHTML;
+    document.body.appendChild(overlay);
+
+    /* 绑定按钮 */
+    document.getElementById('aiGateBack').addEventListener('click', () => {
+      overlay.remove();
+      /* 返回行动选择 */
+      this.state.phase = 'acting';
+    });
+
+    document.getElementById('aiGateConfirm').addEventListener('click', () => {
+      overlay.remove();
+      this._resolveActions();
+    });
+
+    /* 记录用户与AI的协同交互 */
+    AIAdvisor.recordSuggestionFeedback({ action: { id: '_prediction_gate' } }, true);
+  },
+
+  /* ===== 实际执行行动裁决 ===== */
+  _resolveActions(){
     this.state.phase = 'resolution';
     const s = this.state;
 
@@ -2139,6 +2254,24 @@ const Wargame = {
       }, 'wargame');
     }
 
+    /* === AI智囊：记录推演结果到战略记忆 === */
+    if(typeof AIAdvisor !== 'undefined'){
+      AIAdvisor.recordGameResult({
+        scenarioId: s.scenario.id,
+        scenarioName: s.scenario.name,
+        score: finalScore,
+        grade: grade,
+        playerActions: (s.log || []).flatMap(l =>
+          (l.playerActions || []).map(name => {
+            const action = STRATEGIC_ACTIONS.find(a => a.name === name);
+            return action ? action : { id: name, domain: 'unknown', name, escalation: 0, risk: 0 };
+          })
+        ),
+        escalation: s.escalation,
+        rounds: s.round,
+      });
+    }
+
     this.renderFinalResult();
   },
 
@@ -2326,6 +2459,9 @@ const Wargame = {
 
           <!-- 右栏 -->
           <div class="wg-right">
+            <!-- AI战略智囊 (人机协同) -->
+            ${(typeof AIAdvisor !== 'undefined') ? AIAdvisor.renderAdvisorPanel(s) : ''}
+
             <!-- 六域态势 -->
             <div class="wg-panel">
               <div class="wg-panel-head">
@@ -3325,6 +3461,8 @@ const Wargame = {
           </div>
         </div>
 
+        ${this._renderAICommentary(logEntry)}
+
         <div class="wg-res-next">
           ${s.round >= s.maxRounds
             ? '<button class="btn btn-amber wg-next-btn" id="wgNext">查看推演结果 →</button>'
@@ -3336,6 +3474,95 @@ const Wargame = {
 
     document.getElementById('wgExit').addEventListener('click', () => this.exit());
     document.getElementById('wgNext').addEventListener('click', () => this.nextRound());
+  },
+
+  /* ===== AI战后分析评论（人机协同 — 裁决后AI复盘） ===== */
+  _renderAICommentary(logEntry){
+    if(typeof AIAdvisor === 'undefined') return '';
+    const s = this.state;
+    const assessment = AIAdvisor.assessSituation(s);
+    const warnings = AIAdvisor.generateWarning(s);
+
+    /* 分析本轮表现 */
+    const diceResults = logEntry.diceResults || [];
+    const successes = diceResults.filter(d => d.outcome === 'success' || d.outcome === 'great').length;
+    const failures = diceResults.filter(d => d.outcome === 'fail').length;
+    const greatSuccesses = diceResults.filter(d => d.outcome === 'great').length;
+    const playerScore = logEntry.playerScore || 0;
+    const aiScore = logEntry.aiScore || 0;
+
+    let commentary = '';
+    let tone = 'neutral'; /* positive / neutral / negative */
+    let toneColor = 'var(--cyan)';
+
+    /* 表现分析 */
+    if(greatSuccesses > 0 && failures === 0){
+      commentary = `本轮表现卓越！${greatSuccesses}项行动获得大成功，无失败。`;
+      tone = 'positive'; toneColor = 'var(--green)';
+    } else if(successes > failures){
+      commentary = `本轮整体表现良好，${successes}项成功，${failures}项失败。战略方向正确。`;
+      tone = 'positive'; toneColor = 'var(--green)';
+    } else if(failures > successes){
+      commentary = `本轮表现不佳，${failures}项行动失败。建议下轮优先选择低风险行动或增加支援行动。`;
+      tone = 'negative'; toneColor = 'var(--amber)';
+    } else {
+      commentary = `本轮表现中规中矩，成功与失败各半。`;
+      tone = 'neutral'; toneColor = 'var(--cyan)';
+    }
+
+    /* 对手分析 */
+    let oppAnalysis = '';
+    if(aiScore > playerScore + 10){
+      oppAnalysis = `对手本轮得分(${aiScore})高于我方(${playerScore})，反制效果显著。`;
+      if(tone === 'positive') tone = 'neutral';
+    } else if(playerScore > aiScore + 10){
+      oppAnalysis = `我方本轮得分(${playerScore})压制对手(${aiScore})，掌握主动权。`;
+    } else {
+      oppAnalysis = `双方本轮得分接近（我方${playerScore} vs 对方${aiScore}），势均力敌。`;
+    }
+
+    /* 下轮建议 */
+    let nextRoundAdvice = '';
+    if(warnings.length > 0){
+      nextRoundAdvice = warnings[0].desc + ' 建议下轮优先处理。';
+    } else if(s.escalation >= 3){
+      nextRoundAdvice = '升级度偏高，下轮建议选择低升级度行动控制局势。';
+    } else if(s.round < s.maxRounds){
+      nextRoundAdvice = '态势基本稳定，下轮可继续推进战略目标。';
+    } else {
+      nextRoundAdvice = '即将进入终局评估，请确保各域值在合理区间。';
+    }
+
+    return `
+      <div class="wg-ai-commentary" style="background:rgba(8,20,40,.5);border:1px solid ${toneColor}33;border-radius:6px;padding:12px;margin-top:10px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,${toneColor}66,transparent)"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:16px">🤖</span>
+          <span style="font-size:13px;font-weight:700;color:${toneColor}">AI战后分析</span>
+          <span style="flex:1"></span>
+          <span style="font-size:11px;color:var(--txt-2)">第${s.round}轮复盘</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="padding:8px 10px;background:rgba(0,180,216,.04);border-radius:4px">
+            <div style="font-size:10px;font-weight:700;color:${toneColor};margin-bottom:4px">📊 本轮表现</div>
+            <div style="font-size:12px;color:var(--txt-1);line-height:1.5">${commentary}</div>
+          </div>
+          <div style="padding:8px 10px;background:rgba(0,180,216,.04);border-radius:4px">
+            <div style="font-size:10px;font-weight:700;color:var(--cyan);margin-bottom:4px">🎯 对手分析</div>
+            <div style="font-size:12px;color:var(--txt-1);line-height:1.5">${oppAnalysis}</div>
+          </div>
+        </div>
+        <div style="padding:8px 10px;background:rgba(0,180,216,.04);border-radius:4px;margin-top:6px">
+          <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:4px">💡 下轮建议</div>
+          <div style="font-size:12px;color:var(--txt-1);line-height:1.5">${nextRoundAdvice}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:6px;border-top:1px dashed var(--border)">
+          <span style="font-size:10px;color:var(--txt-2)">态势评分: </span>
+          <span style="font-size:14px;font-weight:700;color:${assessment.postureColor};font-family:Consolas,monospace">${assessment.score}</span>
+          <span style="font-size:11px;color:${assessment.postureColor}">${assessment.posture}</span>
+        </div>
+      </div>
+    `;
   },
 
   /* ===== 最终结果 ===== */

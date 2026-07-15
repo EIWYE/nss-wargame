@@ -3283,3 +3283,178 @@
   font-size:13px;color:var(--txt-0);line-height:1.5;position:relative;padding-left:36px;
 }
 .so-rec-item::before{content:'💡';position:absolute;left:12px;top:10px}
+
+/* ================================================================
+ * AI战略智囊 — 人机协同样式 (v12.2)
+ * ================================================================ */
+
+/* === 推演界面中的AI智囊面板 === */
+.ai-advisor-panel{
+  background:rgba(8,20,40,.5);border:1px solid rgba(0,180,216,.25);border-radius:var(--radius);
+  padding:12px;margin-bottom:10px;position:relative;overflow:hidden;
+}
+.ai-advisor-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,180,216,.5),transparent);
+  animation:ai-scan 3s ease-in-out infinite;
+}
+@keyframes ai-scan{0%,100%{opacity:.3}50%{opacity:1}}
+
+.ai-advisor-head{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.ai-advisor-icon{font-size:20px;filter:drop-shadow(0 0 4px rgba(0,180,216,.4))}
+.ai-advisor-title-group{flex:1;display:flex;flex-direction:column}
+.ai-advisor-title{font-size:14px;font-weight:700;color:var(--cyan);letter-spacing:.5px}
+.ai-advisor-sub{font-size:10px;color:var(--txt-2)}
+.ai-advisor-status{
+  font-size:11px;padding:3px 8px;border-radius:3px;font-weight:600;
+}
+
+/* === 态势评估 === */
+.ai-assessment{
+  display:flex;align-items:center;gap:12px;padding:10px;
+  background:rgba(0,180,216,.04);border-radius:var(--radius-sm);margin-bottom:8px;
+}
+.ai-assess-score{display:flex;flex-direction:column;align-items:center;min-width:56px}
+.ai-assess-num{font-size:28px;font-weight:900;font-family:'Consolas',monospace;line-height:1}
+.ai-assess-label{font-size:9px;color:var(--txt-2);margin-top:2px}
+.ai-assess-desc{flex:1;font-size:12px;color:var(--txt-1);line-height:1.5}
+
+/* === 优势/薄弱 === */
+.ai-sw-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.ai-sw-col{padding:6px 8px;border-radius:var(--radius-sm);font-size:11px}
+.ai-sw-pos{background:rgba(46,213,115,.06);border:1px solid rgba(46,213,115,.15)}
+.ai-sw-neg{background:rgba(255,165,2,.06);border:1px solid rgba(255,165,2,.15)}
+.ai-sw-head{font-size:10px;font-weight:700;margin-bottom:4px}
+.ai-sw-pos .ai-sw-head{color:var(--green)}
+.ai-sw-neg .ai-sw-head{color:var(--amber)}
+.ai-sw-item{display:flex;align-items:flex-start;gap:4px;line-height:1.4;margin-bottom:2px}
+.ai-sw-val{font-weight:700;font-family:'Consolas',monospace;min-width:24px}
+
+/* === 预警 === */
+.ai-warnings{margin-bottom:8px}
+.ai-warn-item{
+  display:flex;gap:8px;padding:8px 10px;margin-bottom:4px;
+  background:rgba(8,20,40,.4);border-left:3px solid;border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+}
+.ai-warn-icon{font-size:14px;flex-shrink:0}
+.ai-warn-body{flex:1}
+.ai-warn-title{font-size:12px;font-weight:700;color:var(--txt-0);margin-bottom:2px}
+.ai-warn-desc{font-size:11px;color:var(--txt-2);line-height:1.4}
+.ai-warn-action{font-size:11px;margin-top:2px;font-weight:600}
+
+/* === 策略建议 === */
+.ai-suggestions{margin-bottom:8px}
+.ai-sug-head{font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:6px}
+.ai-sug-card{
+  padding:10px;margin-bottom:6px;background:rgba(8,20,40,.4);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  transition:opacity .3s,transform .3s;
+}
+.ai-sug-header{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.ai-sug-priority{
+  font-size:10px;padding:2px 6px;border-radius:2px;font-weight:700;
+}
+.ai-sug-title{flex:1;font-size:13px;font-weight:600;color:var(--txt-0)}
+.ai-sug-conf{font-size:10px;color:var(--txt-2);font-family:'Consolas',monospace}
+.ai-sug-reasoning{
+  font-size:11px;color:var(--txt-2);line-height:1.5;margin-bottom:6px;
+  padding:6px 8px;background:rgba(0,180,216,.03);border-radius:3px;
+  border-left:2px solid rgba(0,180,216,.2);
+}
+.ai-sug-actions{display:flex;gap:4px;flex-wrap:wrap}
+.ai-sug-btn{
+  font-size:11px;padding:4px 10px;border-radius:3px;cursor:pointer;
+  border:1px solid var(--border-mid);background:rgba(8,20,40,.5);
+  color:var(--txt-1);transition:all .2s;
+}
+.ai-sug-btn:hover{background:rgba(0,180,216,.1);border-color:var(--cyan)}
+.ai-sug-accept{border-color:rgba(46,213,115,.3);color:var(--green)}
+.ai-sug-accept:hover{background:rgba(46,213,115,.1);border-color:var(--green)}
+.ai-sug-analyze{border-color:rgba(0,180,216,.3);color:var(--cyan)}
+.ai-sug-analyze:hover{background:rgba(0,180,216,.1);border-color:var(--cyan)}
+.ai-sug-dismiss{border-color:var(--border);color:var(--txt-2)}
+.ai-sug-dismiss:hover{background:rgba(255,71,87,.08);border-color:var(--red);color:var(--red)}
+
+/* === 人机协同对话区 === */
+.ai-dialog-area{
+  margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);
+}
+.ai-dialog-head{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.ai-dialog-head > span:first-child{font-size:12px;font-weight:700;color:var(--cyan)}
+.ai-dialog-hint{font-size:10px;color:var(--txt-2)}
+.ai-dialog-quick{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.ai-quick-btn{
+  font-size:10px;padding:3px 8px;border-radius:3px;cursor:pointer;
+  background:rgba(0,180,216,.06);border:1px solid rgba(0,180,216,.15);
+  color:var(--cyan);transition:all .2s;
+}
+.ai-quick-btn:hover{background:rgba(0,180,216,.12);border-color:var(--cyan)}
+.ai-dialog-input-wrap{display:flex;gap:4px;margin-bottom:6px}
+.ai-dialog-input{
+  flex:1;font-size:12px;padding:6px 10px;background:rgba(8,20,40,.6);
+  border:1px solid var(--border-mid);border-radius:3px;color:var(--txt-0);
+  outline:none;transition:border-color .2s;
+}
+.ai-dialog-input:focus{border-color:var(--cyan)}
+.ai-dialog-input::placeholder{color:var(--txt-3)}
+.ai-dialog-send{
+  font-size:12px;padding:6px 14px;border-radius:3px;cursor:pointer;
+  background:var(--cyan);color:#0a0e1a;border:none;font-weight:600;
+  transition:opacity .2s;
+}
+.ai-dialog-send:hover{opacity:.85}
+.ai-dialog-response{min-height:0;max-height:300px;overflow-y:auto}
+.ai-dialog-response:empty{display:none}
+.ai-res-msg{
+  padding:8px 10px;margin-top:4px;background:rgba(0,180,216,.04);
+  border-left:3px solid var(--cyan);border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:12px;color:var(--txt-1);line-height:1.6;white-space:pre-wrap;
+  animation:fadeIn .3s;
+}
+
+/* === 仪表盘上的AI智囊卡片 === */
+.ai-dash-widget{
+  background:rgba(8,20,40,.5);border:1px solid rgba(0,180,216,.2);border-radius:var(--radius);
+  padding:14px;margin-bottom:16px;position:relative;overflow:hidden;
+}
+.ai-dash-widget::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,180,216,.4),transparent);
+}
+.ai-dash-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ai-dash-icon{font-size:18px}
+.ai-dash-title{flex:1;font-size:14px;font-weight:700;color:var(--cyan)}
+.ai-dash-status{font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;background:rgba(0,180,216,.1)}
+.ai-dash-score-area{text-align:center;margin-bottom:8px}
+.ai-dash-score{font-size:36px;font-weight:900;font-family:'Consolas',monospace;line-height:1}
+.ai-dash-score-label{font-size:11px;color:var(--txt-2);margin-top:2px}
+.ai-dash-desc{font-size:12px;color:var(--txt-1);line-height:1.5;text-align:center;margin-bottom:10px}
+.ai-dash-warnings{margin-bottom:8px}
+.ai-dash-warn{
+  display:flex;align-items:center;gap:6px;padding:6px 8px;margin-bottom:4px;
+  background:rgba(8,20,40,.4);border:1px solid var(--border);border-radius:3px;font-size:11px;
+}
+.ai-dash-warn-text{color:var(--txt-1)}
+.ai-dash-suggestions{margin-bottom:8px}
+.ai-dash-sug{
+  display:flex;align-items:center;gap:6px;padding:6px 8px;margin-bottom:4px;
+  background:rgba(8,20,40,.4);border:1px solid var(--border);border-radius:3px;font-size:12px;
+}
+.ai-dash-sug-text{color:var(--txt-1)}
+.ai-dash-memory{
+  display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+  padding-top:8px;border-top:1px dashed var(--border);
+  font-size:11px;color:var(--txt-2);
+}
+.ai-dash-mem-item{font-family:'Consolas',monospace}
+
+@media(max-width:768px){
+  .ai-sw-grid{grid-template-columns:1fr}
+  .ai-sug-actions{flex-direction:column}
+  .ai-sug-btn{width:100%;text-align:center}
+  .ai-dialog-quick{justify-content:center}
+  .ai-dash-memory{flex-direction:column;gap:4px;text-align:center}
+}
+
