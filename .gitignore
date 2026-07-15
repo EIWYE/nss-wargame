@@ -1,0 +1,6 @@
+node_modules/
+/screenshot_*
+/test_*.js
+/start-servers.bat
+/server.js
+/package-lock.json

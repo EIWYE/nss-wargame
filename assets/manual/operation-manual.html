@@ -1,0 +1,2445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>国家安全战略兵棋推演平台 · 全方位介绍与操作手册</title>
+<style>
+  /* ================================================================
+   * 国家安全战略兵棋推演平台操作手册 — 排版样式
+   * 依据国家公文格式规范 GB/T 9704-2012
+   * 页边距: 上37mm 下35mm 左28mm 右26mm
+   * 正文字体: 仿宋_GB2312 三号(16pt)
+   * 一级标题: 黑体 三号
+   * 二级标题: 楷体_GB2312 三号
+   * 三级标题: 仿宋_GB2312 加粗 三号
+   * 行距: 固定值28磅
+   * 首行缩进: 2字符
+   * ================================================================ */
+
+  /* ===== 页面设置 ===== */
+  @page {
+    size: A4;
+    margin: 37mm 26mm 35mm 28mm;
+    @bottom-center {
+      content: "— " counter(page) " —";
+      font-family: "FangSong", "仿宋", serif;
+      font-size: 14pt;
+      color: #000;
+    }
+  }
+  @page :first {
+    margin: 0;
+    @bottom-center { content: ""; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== 正文全局 ===== */
+  body {
+    font-family: "FangSong", "仿宋_GB2312", "仿宋", "STFangsong", "Noto Serif SC", serif;
+    font-size: 16pt;          /* 三号字 */
+    line-height: 28pt;        /* 固定值28磅 */
+    color: #000;
+    background: #fff;
+    text-align: justify;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* ===== 封面 ===== */
+  .cover {
+    page-break-after: always;
+    width: 210mm;
+    height: 297mm;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 40%, #0d1b2a 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(0,180,216,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255,71,87,0.06) 0%, transparent 50%);
+  }
+  .cover-emblem {
+    width: 120px; height: 120px;
+    border: 3px solid rgba(0,180,216,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover h1 {
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    font-size: 32pt;
+    font-weight: 700;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+    background: linear-gradient(90deg, #00b4d8, #2ed573);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cover h2 {
+    font-size: 16pt;
+    font-weight: 400;
+    letter-spacing: 8px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 60px;
+    position: relative; z-index: 1;
+  }
+  .cover .cover-subtitle {
+    font-size: 14pt;
+    color: #00b4d8;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    position: relative; z-index: 1;
+  }
+  .cover .cover-version {
+    font-size: 11pt;
+    color: rgba(255,255,255,0.5);
+    margin-top: 80px;
+    position: relative; z-index: 1;
+  }
+  .cover .cover-line {
+    width: 200px; height: 2px;
+    background: linear-gradient(90deg, transparent, #00b4d8, transparent);
+    margin: 20px 0;
+    position: relative; z-index: 1;
+  }
+  .cover .cover-info {
+    margin-top: auto;
+    margin-bottom: 40px;
+    font-size: 10pt;
+    color: rgba(255,255,255,0.4);
+    position: relative; z-index: 1;
+    line-height: 2;
+  }
+
+  /* ===== 目录 ===== */
+  .toc {
+    page-break-after: always;
+    padding: 20px 0;
+  }
+  .toc h1 {
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    font-size: 22pt;            /* 二号字 */
+    font-weight: 700;
+    color: #000;
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 12px;
+    margin-bottom: 30px;
+    letter-spacing: 6px;
+  }
+  .toc-item {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 6px;
+    font-size: 14pt;            /* 四号字 */
+    font-family: "FangSong", "仿宋_GB2312", "仿宋", "STFangsong", serif;
+    line-height: 30pt;
+  }
+  .toc-num {
+    width: auto;
+    min-width: 72px;            /* 足够容纳"第一章"三个字 */
+    white-space: nowrap;        /* 禁止折行 */
+    color: #000;
+    font-weight: 700;
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    flex-shrink: 0;
+  }
+  .toc-title {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .toc-dots {
+    flex-grow: 1;
+    border-bottom: 1px dotted #999;
+    margin: 0 8px 4px;
+    min-width: 40px;
+  }
+  .toc-page {
+    color: #000;
+    flex-shrink: 0;
+    font-family: "Times New Roman", serif;
+    min-width: 24px;
+    text-align: right;
+  }
+  .toc-sub .toc-num {
+    min-width: 72px;
+    color: #333;
+    font-weight: 400;
+    font-family: "FangSong", "仿宋_GB2312", "仿宋", "STFangsong", serif;
+    padding-left: 24px;
+  }
+  .toc-sub .toc-title {
+    font-size: 12pt;
+    color: #333;
+  }
+  .toc-sub .toc-page { color: #555; }
+
+  /* ===== 一级标题（章标题）— 黑体三号 ===== */
+  h1.chapter-title {
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    font-size: 16pt;            /* 三号字 */
+    font-weight: 700;
+    color: #000;
+    text-align: center;
+    margin: 0 0 18pt;
+    padding: 0;
+    page-break-before: always;
+    page-break-after: avoid;
+    line-height: 28pt;
+    letter-spacing: 2px;
+  }
+
+  /* ===== 二级标题（节标题）— 楷体三号 ===== */
+  h2.section-title {
+    font-family: "KaiTi", "楷体_GB2312", "楷体", "STKaiti", serif;
+    font-size: 16pt;            /* 三号字 */
+    font-weight: 700;
+    color: #000;
+    margin: 18pt 0 8pt;
+    padding: 0;
+    page-break-after: avoid;
+    line-height: 28pt;
+    text-indent: 2em;           /* 首行缩进2字符 */
+  }
+
+  /* ===== 三级标题 — 仿宋加粗三号 ===== */
+  h3.subsection-title {
+    font-family: "FangSong", "仿宋_GB2312", "仿宋", "STFangsong", serif;
+    font-size: 16pt;            /* 三号字 */
+    font-weight: 700;
+    color: #000;
+    margin: 14pt 0 6pt;
+    page-break-after: avoid;
+    line-height: 28pt;
+    text-indent: 2em;
+  }
+  h4 {
+    font-family: "FangSong", "仿宋_GB2312", "仿宋", "STFangsong", serif;
+    font-size: 16pt;
+    font-weight: 700;
+    color: #000;
+    margin: 10pt 0 4pt;
+    page-break-after: avoid;
+    line-height: 28pt;
+    text-indent: 2em;
+  }
+
+  /* ===== 段落 — 首行缩进2字符 ===== */
+  p {
+    margin-bottom: 0;
+    text-align: justify;
+    text-indent: 2em;           /* 首行缩进2字符 */
+    line-height: 28pt;
+  }
+
+  /* 列表 */
+  ul, ol {
+    margin: 6pt 0 6pt 2em;
+    line-height: 28pt;
+  }
+  li {
+    margin-bottom: 2pt;
+    text-align: justify;
+  }
+  li p { text-indent: 0; }
+
+  /* ===== 表格 ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+    font-size: 14pt;            /* 四号字 */
+    font-family: "FangSong", "仿宋_GB2312", "仿宋", "STFangsong", serif;
+    page-break-inside: auto;
+    line-height: 22pt;
+  }
+  th {
+    background: #e8e8e8;
+    color: #000;
+    padding: 6pt 8pt;
+    text-align: center;
+    font-weight: 700;
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    border: 1px solid #000;
+    font-size: 14pt;
+  }
+  td {
+    padding: 4pt 8pt;
+    border: 1px solid #000;
+    vertical-align: top;
+    font-size: 14pt;
+  }
+  tr:nth-child(even) td { background: #f5f5f5; }
+  tr { page-break-inside: avoid; }
+
+  /* ===== 高亮框 ===== */
+  .callout {
+    background: #f0f5ff;
+    border-left: 3pt solid #00b4d8;
+    padding: 10pt 14pt;
+    margin: 10pt 0;
+    page-break-inside: avoid;
+    font-size: 14pt;
+    line-height: 26pt;
+  }
+  .callout-warn {
+    background: #fff8e8;
+    border-left-color: #cc8800;
+  }
+  .callout-danger {
+    background: #fff0f3;
+    border-left-color: #cc0033;
+  }
+  .callout-success {
+    background: #f0fff0;
+    border-left-color: #008800;
+  }
+  .callout-title {
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    font-weight: 700;
+    margin-bottom: 4pt;
+    font-size: 14pt;
+    color: #000;
+  }
+  .callout p { text-indent: 2em; font-size: 14pt; line-height: 26pt; }
+
+  /* ===== 代码框 ===== */
+  .code-block {
+    background: #f5f5f5;
+    color: #000;
+    padding: 10pt 14pt;
+    border: 1px solid #ccc;
+    font-family: "Courier New", "Consolas", monospace;
+    font-size: 12pt;
+    line-height: 22pt;
+    margin: 10pt 0;
+    overflow-x: auto;
+    page-break-inside: avoid;
+    white-space: pre-wrap;
+  }
+
+  /* ===== 场景卡片 ===== */
+  .scenario-card {
+    border: 1px solid #999;
+    padding: 12pt 16pt;
+    margin: 10pt 0;
+    page-break-inside: avoid;
+    background: #fafafa;
+    font-size: 14pt;
+    line-height: 26pt;
+  }
+  .scenario-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6pt;
+  }
+  .scenario-card-code {
+    background: #333;
+    color: #fff;
+    padding: 2pt 8pt;
+    font-size: 12pt;
+    font-weight: 700;
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    margin-right: 10pt;
+  }
+  .scenario-card-name {
+    font-size: 15pt;
+    font-weight: 700;
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    color: #000;
+  }
+  .scenario-card-meta {
+    font-size: 12pt;
+    color: #555;
+    margin-bottom: 4pt;
+  }
+  .scenario-card-meta span {
+    margin-right: 14pt;
+  }
+  .scenario-card p {
+    text-indent: 2em;
+    font-size: 14pt;
+    line-height: 26pt;
+    margin-bottom: 2pt;
+  }
+
+  /* ===== 流程框 ===== */
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+    line-height: 28pt;
+  }
+  .flow-num {
+    width: 24pt; height: 24pt;
+    border-radius: 50%;
+    background: #00b4d8;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12pt;
+    flex-shrink: 0;
+    margin-right: 10pt;
+    margin-top: 4pt;
+  }
+  .flow-content { flex-grow: 1; }
+  .flow-content p { text-indent: 0; font-size: 14pt; line-height: 26pt; }
+  .flow-title {
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    font-weight: 700;
+    margin-bottom: 2pt;
+    font-size: 14pt;
+    color: #000;
+  }
+
+  /* ===== 信息标签 ===== */
+  .tag {
+    display: inline-block;
+    padding: 1pt 6pt;
+    font-size: 12pt;
+    font-weight: 700;
+    margin-right: 3pt;
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+  }
+  .tag-red { background: #cc0033; color: #fff; }
+  .tag-blue { background: #00b4d8; color: #fff; }
+  .tag-green { background: #008800; color: #fff; }
+  .tag-amber { background: #cc8800; color: #fff; }
+  .tag-purple { background: #663399; color: #fff; }
+  .tag-gray { background: #666; color: #fff; }
+
+  /* ===== 分隔线 ===== */
+  hr {
+    border: none;
+    border-top: 1px solid #999;
+    margin: 14pt 0;
+  }
+
+  /* ===== 强调文本 ===== */
+  strong {
+    font-weight: 700;
+    color: #000;
+  }
+  .accent { color: #00b4d8; font-weight: 700; }
+  .danger-text { color: #cc0033; font-weight: 700; }
+
+  /* ===== 页面控制 ===== */
+  .page-break { page-break-before: always; }
+  .no-break { page-break-inside: avoid; }
+
+  /* ===== 附录样式 ===== */
+  .glossary-item {
+    margin-bottom: 4pt;
+    padding-left: 2em;
+    text-indent: -2em;
+    line-height: 28pt;
+    font-size: 16pt;
+  }
+  .glossary-term {
+    font-family: "SimHei", "黑体", "STHeiti", sans-serif;
+    font-weight: 700;
+    color: #000;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== 封面 ==================== -->
+<div class="cover">
+  <div class="cover-emblem">🛡️</div>
+  <h1>国家安全战略兵棋推演平台</h1>
+  <div class="cover-line"></div>
+  <h2>全方位介绍与操作手册</h2>
+  <div class="cover-subtitle">战略推演 · 全域协同 · 智能裁决</div>
+  <div class="cover-version">版本 V12.1 &nbsp;|&nbsp; 2026年7月</div>
+  <div class="cover-info">
+    战略推演评估中心 编制<br>
+    本手册涵盖平台38个推演场景、8大功能区、6大角色体系<br>
+    以及完整推演引擎规则与操作指南
+  </div>
+</div>
+
+<!-- ==================== 目录 ==================== -->
+<div class="toc">
+  <h1>目 录</h1>
+
+  <div class="toc-item">
+    <span class="toc-num">第一章</span>
+    <span class="toc-title">平台概述与设计理念</span>
+    <span class="toc-dots"></span>
+    <span class="toc-page">3</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">1.1</span><span class="toc-title">平台定位与目标</span><span class="toc-dots"></span><span class="toc-page">3</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">1.2</span><span class="toc-title">核心设计理念</span><span class="toc-dots"></span><span class="toc-page">3</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">1.3</span><span class="toc-title">系统架构总览</span><span class="toc-dots"></span><span class="toc-page">4</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">1.4</span><span class="toc-title">技术规格与运行环境</span><span class="toc-dots"></span><span class="toc-page">5</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第二章</span>
+    <span class="toc-title">系统登录与引导系统</span>
+    <span class="toc-dots"></span><span class="toc-page">6</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">2.1</span><span class="toc-title">用户注册与登录</span><span class="toc-dots"></span><span class="toc-page">6</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">2.2</span><span class="toc-title">系统引导流程</span><span class="toc-dots"></span><span class="toc-page">7</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">2.3</span><span class="toc-title">角色选择与切换</span><span class="toc-dots"></span><span class="toc-page">8</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第三章</span>
+    <span class="toc-title">战略指挥中心</span>
+    <span class="toc-dots"></span><span class="toc-page">9</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">3.1</span><span class="toc-title">指挥中心界面布局</span><span class="toc-dots"></span><span class="toc-page">9</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">3.2</span><span class="toc-title">全球态势图与威胁监控</span><span class="toc-dots"></span><span class="toc-page">10</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">3.3</span><span class="toc-title">推演记录与数据面板</span><span class="toc-dots"></span><span class="toc-page">11</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第四章</span>
+    <span class="toc-title">场景推演系统</span>
+    <span class="toc-dots"></span><span class="toc-page">12</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.1</span><span class="toc-title">场景库总览（38个场景）</span><span class="toc-dots"></span><span class="toc-page">12</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.2</span><span class="toc-title">推演流程详解</span><span class="toc-dots"></span><span class="toc-page">14</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.3</span><span class="toc-title">阵营选择与对弈机制</span><span class="toc-dots"></span><span class="toc-page">16</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.4</span><span class="toc-title">跨区域联机对弈系统</span><span class="toc-dots"></span><span class="toc-page">17</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第五章</span>
+    <span class="toc-title">推演引擎核心规则</span><span class="toc-dots"></span><span class="toc-page">18</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">5.1</span><span class="toc-title">百分骰系统</span><span class="toc-dots"></span><span class="toc-page">18</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">5.2</span><span class="toc-title">成功率计算公式</span><span class="toc-dots"></span><span class="toc-page">19</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">5.3</span><span class="toc-title">资金系统</span><span class="toc-dots"></span><span class="toc-page">20</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">5.4</span><span class="toc-title">声望系统</span><span class="toc-dots"></span><span class="toc-page">21</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">5.5</span><span class="toc-title">升级阶梯与智能对手行为</span><span class="toc-dots"></span><span class="toc-page">22</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">5.6</span><span class="toc-title">评分系统</span><span class="toc-dots"></span><span class="toc-page">23</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第六章</span>
+    <span class="toc-title">力量战备与情报系统</span>
+    <span class="toc-dots"></span><span class="toc-page">24</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">6.1</span><span class="toc-title">场景化力量配置</span><span class="toc-dots"></span><span class="toc-page">24</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">6.2</span><span class="toc-title">情报中心与情报融合</span><span class="toc-dots"></span><span class="toc-page">25</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第七章</span>
+    <span class="toc-title">八大功能区系统</span><span class="toc-dots"></span><span class="toc-page">27</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.1</span><span class="toc-title">功能区总览与协同机制</span><span class="toc-dots"></span><span class="toc-page">27</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.2</span><span class="toc-title">战略情报中心</span><span class="toc-dots"></span><span class="toc-page">28</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.3</span><span class="toc-title">作战指挥中心</span><span class="toc-dots"></span><span class="toc-page">29</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.4</span><span class="toc-title">后勤保障中心</span><span class="toc-dots"></span><span class="toc-page">30</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.5</span><span class="toc-title">国防经济中心</span><span class="toc-dots"></span><span class="toc-page">30</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.6</span><span class="toc-title">科技信息战中心</span><span class="toc-dots"></span><span class="toc-page">31</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.7</span><span class="toc-title">模拟训练中心</span><span class="toc-dots"></span><span class="toc-page">31</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.8</span><span class="toc-title">推演复盘中心</span><span class="toc-dots"></span><span class="toc-page">32</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">7.9</span><span class="toc-title">动态数据联动机制</span><span class="toc-dots"></span><span class="toc-page">33</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第八章</span>
+    <span class="toc-title">综合战略推演中心</span>
+    <span class="toc-dots"></span><span class="toc-page">33</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">8.1</span><span class="toc-title">场景串联引擎（8条推演链）</span><span class="toc-dots"></span><span class="toc-page">33</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">8.2</span><span class="toc-title">信息串并中心（10条融合规则）</span><span class="toc-dots"></span><span class="toc-page">35</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">8.3</span><span class="toc-title">战略决策沙盘（18项决策）</span><span class="toc-dots"></span><span class="toc-page">36</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第九章</span>
+    <span class="toc-title">角色差异化系统</span>
+    <span class="toc-dots"></span><span class="toc-page">37</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">9.1</span><span class="toc-title">六大角色定义</span><span class="toc-dots"></span><span class="toc-page">37</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">9.2</span><span class="toc-title">角色专属推演模块</span><span class="toc-dots"></span><span class="toc-page">38</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">9.3</span><span class="toc-title">训练教案系统（24个模块）</span><span class="toc-dots"></span><span class="toc-page">39</span></div>
+
+  <div class="toc-item">
+    <span class="toc-num">第十章</span>
+    <span class="toc-title">案例库与训练系统</span>
+    <span class="toc-dots"></span><span class="toc-page">40</span>
+  </div>
+
+  <div class="toc-item">
+    <span class="toc-num">第十一章</span>
+    <span class="toc-title">38个场景详述</span>
+    <span class="toc-dots"></span><span class="toc-page">42</span>
+  </div>
+
+  <div class="toc-item">
+    <span class="toc-num">第十二章</span>
+    <span class="toc-title">附录</span>
+    <span class="toc-dots"></span><span class="toc-page">52</span>
+  </div>
+  <div class="toc-item toc-sub"><span class="toc-num">12.1</span><span class="toc-title">术语表</span><span class="toc-dots"></span><span class="toc-page">52</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">12.2</span><span class="toc-title">规则速查表</span><span class="toc-dots"></span><span class="toc-page">53</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">12.3</span><span class="toc-title">评分公式汇总</span><span class="toc-dots"></span><span class="toc-page">54</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">12.4</span><span class="toc-title">战略行动完整清单</span><span class="toc-dots"></span><span class="toc-page">55</span></div>
+</div>
+
+<!-- ==================== 第一章 ==================== -->
+<h1 class="chapter-title">第一章　平台概述与设计理念</h1>
+
+<h2 class="section-title">1.1　平台定位与目标</h2>
+
+<p>国家安全战略兵棋推演平台是一套面向国家安全战略教育与训练的专业化兵棋推演系统。平台以"全域协同、智能裁决、实战导向"为核心原则，通过模拟真实国家安全场景，为战略分析人员、军事指挥员、外交官员和科研人员提供沉浸式的战略推演体验。</p>
+
+<p>平台的核心目标是：</p>
+<ul>
+  <li><strong>战略思维训练</strong>：通过多域博弈场景训练用户的战略全局视野与跨域协同决策能力。</li>
+  <li><strong>态势感知提升</strong>：以全球多区域态势图和实时数据面板帮助用户建立对国际安全形势的立体认知。</li>
+  <li><strong>推演复盘分析</strong>：提供完整的推演记录与复盘报告系统，支持行动后反思与经验提炼。</li>
+  <li><strong>多角色协作</strong>：通过六大角色差异化系统，模拟真实组织架构中的分工协作场景。</li>
+</ul>
+
+<div class="callout">
+  <div class="callout-title">平台规格概览</div>
+  <table>
+    <tr><th style="width:30%">项目</th><th>规格</th></tr>
+    <tr><td>版本</td><td>V12.1</td></tr>
+    <tr><td>场景数量</td><td>38个独立推演场景</td></tr>
+    <tr><td>战略行动数量</td><td>145个（含通用行动与场景专属行动）</td></tr>
+    <tr><td>功能区域</td><td>8大功能区协同运作</td></tr>
+    <tr><td>推演链</td><td>8条跨域场景串联推演链</td></tr>
+    <tr><td>情报融合规则</td><td>10条多源情报串并规则</td></tr>
+    <tr><td>战略决策选项</td><td>18项全局战略决策</td></tr>
+    <tr><td>角色体系</td><td>6大角色，24个专属推演模块</td></tr>
+    <tr><td>案例库</td><td>100个历史与战略案例</td></tr>
+    <tr><td>训练教案</td><td>24个完整训练模块（含知识讲解、案例分析、实战练习、自我检测）</td></tr>
+    <tr><td>战略域</td><td>军事、经济、网络、外交、信息、国内（六域）</td></tr>
+    <tr><td>联机对弈</td><td>WebSocket实时通信，支持跨区域双人对弈，AI担任导调方</td></tr>
+    <tr><td>军种体系</td><td>十一大军种（含2024年军改后新组建力量）</td></tr>
+  </table>
+</div>
+
+<h2 class="section-title">1.2　核心设计理念</h2>
+
+<h3 class="subsection-title">1.2.1　全域协同理念</h3>
+<p>现代国家安全博弈已从单一军事域对抗演进为多域同步博弈。平台采用<strong>六域模型</strong>——军事、经济、网络、外交、信息、国内，每个行动都会对多个域产生交叉影响。推演者必须在六个域之间平衡资源投入，理解跨域行动的时序配合与效果叠加原理。</p>
+
+<table>
+  <tr><th>域</th><th>图标</th><th>核心功能</th><th>典型行动</th></tr>
+  <tr><td><span class="tag tag-red">军事</span></td><td>⚔️</td><td>武力威慑与实战部署</td><td>前沿军事威慑部署、联合军事演习、精确军事打击</td></tr>
+  <tr><td><span class="tag tag-amber">经济</span></td><td>📊</td><td>制裁、金融与供应链控制</td><td>经济制裁反制、贸易谈判、供应链重构</td></tr>
+  <tr><td><span class="tag tag-blue">网络</span></td><td>🌐</td><td>网络攻防与信息基础设施防护</td><td>网络防御加固、网络反制攻击、攻击溯源</td></tr>
+  <tr><td><span class="tag tag-green">外交</span></td><td>🤝</td><td>联盟构建、谈判与国际舆论</td><td>外交斡旋谈判、多边外交协调、高级别峰会</td></tr>
+  <tr><td><span class="tag tag-purple">信息</span></td><td>📡</td><td>认知战、舆论引导与情报发布</td><td>舆论反击、权威信息发布、认知域作战</td></tr>
+  <tr><td><span class="tag tag-gray">国内</span></td><td>🏠</td><td>国防动员、经济调控与社会团结</td><td>国防动员、经济调控措施、民意引导团结</td></tr>
+</table>
+
+<h3 class="subsection-title">1.2.2　智能裁决理念</h3>
+<p>平台采用<strong>百分骰系统</strong>作为裁决核心，结合多因素修正模型（力量战备修正、声望修正、国内支持修正、情报修正），在保证随机性的同时体现战略决策的质量差异。大成功（成功率×25%以下）将获得1.5倍效果加成，失败则仅获得30%效果并可能遭受反噬。</p>
+
+<h3 class="subsection-title">1.2.3　场景驱动理念</h3>
+<p>所有推演均围绕<strong>38个独立场景</strong>展开，每个场景拥有独特的背景设定、对弈双方、力量配置、情报包、专属行动和声望规则。场景之间通过8条推演链串联，模拟跨域连锁反应，使推演者体验从单一场景到全域联动的完整战略博弈过程。</p>
+
+<h2 class="section-title">1.3　系统架构总览</h2>
+
+<p>平台采用纯前端单页应用架构，无需后端服务器即可独立运行。核心代码分为数据层、引擎层、界面层三个层次：</p>
+
+<table>
+  <tr><th style="width:15%">层次</th><th style="width:25%">文件</th><th>职责</th></tr>
+  <tr><td rowspan="3"><strong>数据层</strong></td><td>数据文件</td><td>场景库（38个场景）、用户状态、推演方/阵营定义、推演记录</td></tr>
+  <tr><td>场景配置文件</td><td>场景化力量配置、场景化情报包、场景化功能模块内容</td></tr>
+  <tr><td>角色文件</td><td>六大角色定义、角色专属推演模块、角色功能区优先级</td></tr>
+  <tr><td rowspan="4"><strong>引擎层</strong></td><td>推演引擎文件</td><td>推演引擎核心——规则定义、战略行动库、推演流程控制</td></tr>
+  <tr><td>综合推演文件</td><td>综合战略推演中心——场景链引擎、情报融合规则、战略决策沙盘、综合评估系统</td></tr>
+  <tr><td>功能区文件</td><td>功能区协同系统——8大功能区配置、协同行动、推演联动机制</td></tr>
+  <tr><td>训练教案文件</td><td>训练教案系统——24个模块的详细训练内容（知识讲解、案例分析、实战练习、自我检测）</td></tr>
+  <tr><td rowspan="3"><strong>界面层</strong></td><td>主控制器</td><td>页面路由、模块切换、事件绑定</td></tr>
+  <tr><td>界面辅助</td><td>界面渲染辅助——数据流动画、状态指示器</td></tr>
+  <tr><td>引导流程</td><td>系统引导——新用户引导流程（多步骤介绍）</td></tr>
+</table>
+
+<h3 class="subsection-title">1.3.1　文件依赖关系</h3>
+<div class="code-block">
+主页面文件
+  ├─ 认证入口（登录页/注册页）
+  ├─ 样式目录/
+  │   ├─ 组件样式（推演面板、功能区、综合推演中心）
+  │   └─ 基础样式（布局、导航、卡片）
+  └─ 脚本目录/
+      ├─ 数据文件（场景/阵营/用户状态）
+      ├─ 场景配置文件（力量/情报/模块配置）
+      ├─ 角色文件（角色系统）
+      ├─ 推演引擎文件（推演核心）
+      ├─ 综合推演文件（综合推演）
+      ├─ 功能区文件（功能区协同）
+      ├─ 训练教案文件（训练教案）
+      ├─ 引导流程文件（引导流程）
+      ├─ 界面辅助文件（渲染辅助）
+      └─ 主控制器文件（主控制器）
+</div>
+
+<h2 class="section-title">1.4　技术规格与运行环境</h2>
+
+<table>
+  <tr><th style="width:30%">项目</th><th>规格</th></tr>
+  <tr><td>前端框架</td><td>原生脚本语言（无第三方框架依赖）</td></tr>
+  <tr><td>渲染方式</td><td>模板字符串动态渲染</td></tr>
+  <tr><td>布局技术</td><td>网格布局与弹性布局</td></tr>
+  <tr><td>样式系统</td><td>层叠样式表自定义属性</td></tr>
+  <tr><td>数据存储</td><td>浏览器本地存储（用户状态持久化）</td></tr>
+  <tr><td>服务器</td><td>静态文件服务器（仅用于开发环境文件分发）</td></tr>
+  <tr><td>浏览器要求</td><td>现代浏览器（需支持二零二零年标准）</td></tr>
+  <tr><td>推荐分辨率</td><td>1920×1080及以上（最低1366×768）</td></tr>
+  <tr><td>骰子系统</td><td>百分骰（1-100随机整数）</td></tr>
+  <tr><td>主题</td><td>深色战术风格（#0a0e27主背景，青色#00b4d8强调色）</td></tr>
+</table>
+
+<!-- ==================== 第二章 ==================== -->
+<h1 class="chapter-title">第二章　系统登录与引导系统</h1>
+
+<h2 class="section-title">2.1　用户注册与登录</h2>
+
+<p>平台采用前端认证系统，用户通过登录页面进入系统。登录页面采用深色战术风格设计，包含平台标识、登录表单和安全提示信息。</p>
+
+<h3 class="subsection-title">2.1.1　登录流程</h3>
+<div class="flow-step">
+  <div class="flow-num">1</div>
+  <div class="flow-content">
+    <div class="flow-title">访问平台</div>
+    <p>在浏览器地址栏输入平台地址，系统自动检测登录状态。若未登录，跳转至登录页面。</p>
+  </div>
+</div>
+<div class="flow-step">
+  <div class="flow-num">2</div>
+  <div class="flow-content">
+    <div class="flow-title">输入凭据</div>
+    <p>在登录表单中输入用户名和密码。首次使用可点击"注册"链接跳转至注册页面创建新账户。</p>
+  </div>
+</div>
+<div class="flow-step">
+  <div class="flow-num">3</div>
+  <div class="flow-content">
+    <div class="flow-title">进入系统</div>
+    <p>验证通过后，系统自动跳转至主界面，并根据用户是否为首次登录决定是否启动引导流程。</p>
+  </div>
+</div>
+
+<h3 class="subsection-title">2.1.2　用户状态</h3>
+<p>系统内置默认用户状态，用于标识当前推演者的身份信息：</p>
+<table>
+  <tr><th>字段</th><th>默认值</th><th>说明</th></tr>
+  <tr><td>姓名</td><td>指挥官</td><td>用户显示名称</td></tr>
+  <tr><td>所属组织</td><td>战略推演评估中心</td><td>所属组织</td></tr>
+  <tr><td>角色</td><td>科研人员</td><td>当前角色（可在系统内切换）</td></tr>
+  <tr><td>安全许可等级</td><td>机密</td><td>安全许可等级</td></tr>
+</table>
+
+<h2 class="section-title">2.2　系统引导流程</h2>
+
+<p>新用户首次进入系统时，将自动启动多步骤引导流程。系统引导通过分步介绍帮助用户快速了解平台的核心功能模块和操作方式。</p>
+
+<h3 class="subsection-title">2.2.1　引导步骤</h3>
+<p>V12.1版本的引导系统包含以下步骤，每步配有详细文字说明和视觉引导：</p>
+
+<table>
+  <tr><th style="width:8%">步骤</th><th style="width:25%">标题</th><th>内容摘要</th></tr>
+  <tr><td>1</td><td>欢迎进入平台</td><td>介绍平台定位、版本信息和核心能力概述</td></tr>
+  <tr><td>2</td><td>战略指挥中心</td><td>展示全球态势图、威胁等级监控、推演记录面板</td></tr>
+  <tr><td>3</td><td>场景推演系统</td><td>介绍38个推演场景的分类与选择方式</td></tr>
+  <tr><td>4</td><td>推演引擎规则</td><td>概述百分骰系统、成功率计算、六域效果</td></tr>
+  <tr><td>5</td><td>力量与情报系统</td><td>介绍场景化力量配置和情报融合机制</td></tr>
+  <tr><td>6</td><td>八大功能区</td><td>概览8大功能区的协同运作机制</td></tr>
+  <tr><td>7</td><td>综合战略推演中心</td><td>介绍8条推演链、10条情报融合规则、18项战略决策</td></tr>
+  <tr><td>8</td><td>角色差异化系统</td><td>介绍6大角色和24个专属推演模块</td></tr>
+  <tr><td>9</td><td>案例库与训练</td><td>概览100个案例库和24个训练模块</td></tr>
+  <tr><td>10</td><td>开始推演</td><td>引导用户选择首个场景开始推演体验</td></tr>
+</table>
+
+<div class="callout">
+  <div class="callout-title">引导控制</div>
+  <p>引导流程支持"上一步/下一步"导航，用户可随时点击"跳过"按钮直接进入系统主界面。跳过后可在顶部导航栏的"帮助"菜单中重新启动引导。</p>
+</div>
+
+<h2 class="section-title">2.3　角色选择与切换</h2>
+
+<p>平台内置<strong>六大角色</strong>：指挥员、情报分析员、作战参谋、经济分析师、科技研究员、后勤管理官。不同角色拥有差异化的推演模块、功能区优先级和场景偏好。</p>
+
+<h3 class="subsection-title">2.3.1　角色切换操作</h3>
+<ol>
+  <li>在主界面顶部导航栏中，点击当前角色标识（如"科研人员"）。</li>
+  <li>在弹出的角色选择面板中，选择目标角色。</li>
+  <li>系统将自动调整侧边栏功能区的排列顺序和可见性，并加载该角色的专属推演模块。</li>
+  <li>角色切换不会影响当前进行中的推演状态。</li>
+</ol>
+
+<h3 class="subsection-title">2.3.2　角色概览</h3>
+<table>
+  <tr><th>角色</th><th>图标</th><th>核心职责</th><th>专属模块数</th></tr>
+  <tr><td>指挥员</td><td>🛡️</td><td>全域协同指挥、危机决策、战略威慑</td><td>4个</td></tr>
+  <tr><td>情报分析员</td><td>📡</td><td>情报搜集研判、威胁预警、溯源分析</td><td>4个</td></tr>
+  <tr><td>作战参谋</td><td>⚔️</td><td>联合作战规划、力量部署、战术推演</td><td>4个</td></tr>
+  <tr><td>经济分析师</td><td>📊</td><td>经济战推演、金融防御、供应链博弈</td><td>4个</td></tr>
+  <tr><td>科技研究员</td><td>🔬</td><td>科技竞争推演、网络攻防、太空博弈</td><td>4个</td></tr>
+  <tr><td>后勤管理官</td><td>🚚</td><td>战略投送、供应链保障、应急动员</td><td>4个</td></tr>
+</table>
+
+<!-- ==================== 第三章 ==================== -->
+<h1 class="chapter-title">第三章　战略指挥中心</h1>
+
+<p>战略指挥中心是平台的首页和核心仪表盘，提供全局态势感知、推演入口和系统状态总览。用户登录后首先进入此页面。</p>
+
+<h2 class="section-title">3.1　指挥中心界面布局</h2>
+
+<p>指挥中心界面分为以下区域：</p>
+<table>
+  <tr><th style="width:20%">区域</th><th style="width:20%">位置</th><th>功能</th></tr>
+  <tr><td>顶部导航栏</td><td>页面顶部</td><td>平台标识与系统标题（居中显示）、用户信息、登出按钮</td></tr>
+  <tr><td>侧边导航栏</td><td>页面左侧</td><td>四段式导航结构：①角色指挥中心（态势总览、专属推演、推演场景）；②战略功能区（按角色优先级排列，含引导性副标题）；③推演辅助（综合推演、力量战备、情报中心、案例库、联机对战）；④系统（推演记录、规则手册、系统设置）。导航标题以青色装饰条标识，引导性文字以区分色显示</td></tr>
+  <tr><td>态势图区域</td><td>中央上部</td><td>全球多区域可交互态势图，显示当前威胁热点</td></tr>
+  <tr><td>数据面板</td><td>中央下部</td><td>威胁等级（防御准备状态）、推演统计、力量战备概览</td></tr>
+  <tr><td>推演记录</td><td>右侧/下部</td><td>历史推演记录列表（场景名/得分/日期/结果）</td></tr>
+  <tr><td>动态态势感知</td><td>态势图下方</td><td>实时滚动的安全事件数据流</td></tr>
+</table>
+
+<h2 class="section-title">3.2　全球态势图与威胁监控</h2>
+
+<h3 class="subsection-title">3.2.1　全球态势图</h3>
+<p>态势图是可交互的全球多区域安全态势可视化工具。地图标注了当前活跃的安全热点区域，以不同颜色标识威胁等级：</p>
+<ul>
+  <li><span class="tag tag-red">红色（5级）</span>高烈度威胁——战争边缘态势或正在发生的冲突</li>
+  <li><span class="tag tag-amber">橙色（4级）</span>中高烈度——冲突风险显著，多域对抗加剧</li>
+  <li><span class="tag tag-blue">黄色（3级）</span>中烈度——常规博弈态势，需要关注</li>
+  <li><span class="tag tag-green">绿色（2级以下）</span>低烈度——稳定态势</li>
+</ul>
+
+<p>用户可点击地图上的热点标记，查看对应场景的简要信息并直接进入推演。</p>
+
+<h3 class="subsection-title">3.2.2　威胁等级（防御准备状态）</h3>
+<p>系统采用防御准备状态体系标识全局威胁等级：</p>
+<table>
+  <tr><th>等级</th><th>状态</th><th>颜色</th><th>含义</th></tr>
+  <tr><td>1</td><td>最高战备</td><td><span class="tag tag-red">红色</span></td><td>核战争迫在眉睫，全军最高战备</td></tr>
+  <tr><td>2</td><td>高度战备</td><td><span class="tag tag-amber">橙色</span></td><td>重大冲突即将爆发</td></tr>
+  <tr><td>3</td><td>提升战备</td><td><span class="tag tag-blue">黄色</span></td><td>军事威胁升级，需提高警惕</td></tr>
+  <tr><td>4</td><td>常规战备</td><td><span class="tag tag-green">绿色</span></td><td>正常状态，常规巡逻</td></tr>
+  <tr><td>5</td><td>最低战备</td><td><span class="tag tag-gray">灰色</span></td><td>和平状态</td></tr>
+</table>
+
+<h2 class="section-title">3.3　推演记录与数据面板</h2>
+
+<p>指挥中心的数据面板展示以下核心信息：</p>
+
+<h3 class="subsection-title">3.3.1　推演统计数据</h3>
+<ul>
+  <li><strong>累计推演次数</strong>：用户已完成的所有推演总数</li>
+  <li><strong>平均得分</strong>：所有推演的加权平均分</li>
+  <li><strong>胜率</strong>：胜利结果占总推演的比例</li>
+  <li><strong>域覆盖率</strong>：用户在六域中发起行动的覆盖比例</li>
+</ul>
+
+<h3 class="subsection-title">3.3.2　推演记录</h3>
+<p>系统保存用户的推演历史，每条记录包含：</p>
+<table>
+  <tr><th>字段</th><th>说明</th></tr>
+  <tr><td>场景名称</td><td>推演的场景全名</td></tr>
+  <tr><td>得分</td><td>0-100的综合评分</td></tr>
+  <tr><td>日期</td><td>推演完成的日期</td></tr>
+  <tr><td>结果</td><td>胜利 / 平局 / 失败</td></tr>
+  <tr><td>角色</td><td>推演时使用的角色</td></tr>
+</table>
+
+<h3 class="subsection-title">3.3.3　动态态势感知数据流</h3>
+<p>态势图下方设有实时滚动的安全事件数据流，模拟真实情报终端的信息推送效果。数据流内容涵盖：多源情报融合报告、威胁预警通知、力量状态变更、经济指标异动、外交动态等。该数据流为纯视觉效果，不影响推演实际进程。</p>
+
+<!-- ==================== 第四章 ==================== -->
+<h1 class="chapter-title">第四章　场景推演系统</h1>
+
+<h2 class="section-title">4.1　场景库总览（38个场景）</h2>
+
+<p>场景库是平台推演的核心载体，共包含38个独立推演场景，覆盖军事博弈、经济安全、网络攻防、外交博弈、信息作战、太空安全、资源安全、科技竞争等多个战略领域。每个场景拥有完整的背景设定、对弈双方、力量配置、情报包和专属行动。</p>
+
+<h3 class="subsection-title">4.1.1　场景分类</h3>
+<table>
+  <tr><th>类别</th><th>场景数</th><th>代表场景</th></tr>
+  <tr><td>军事博弈</td><td>11</td><td>台海方向战略博弈、南海方向权益维护、中印边境战略管控、钓鱼岛方向维权、东海防空识别区博弈等</td></tr>
+  <tr><td>经济安全</td><td>8</td><td>经济安全与制裁博弈、金融制裁与去美元化、关键矿产供应链博弈、粮食安全与农业博弈、能源转型博弈等</td></tr>
+  <tr><td>网络与信息</td><td>4</td><td>网络空间安全攻防、认知域作战与舆论博弈、数字主权与数据安全、基因数据安全攻防</td></tr>
+  <tr><td>外交博弈</td><td>8</td><td>印太战略围堵与反制、北极航道与极地博弈、北约东扩与欧亚安全、非洲之角安全博弈、冰上丝绸之路建设等</td></tr>
+  <tr><td>混合与综合</td><td>3</td><td>混合战争综合应对、生物安全事件应对、核扩散与核安全管控</td></tr>
+  <tr><td>科技竞争</td><td>4</td><td>人工智能与前沿科技军备竞赛、量子科技争霸战、太空域安全与轨道博弈、太空碎片碰撞危机</td></tr>
+</table>
+
+<h3 class="subsection-title">4.1.2　场景数据结构</h3>
+<p>每个场景包含以下核心数据字段：</p>
+<table>
+  <tr><th style="width:18%">字段</th><th>说明</th></tr>
+  <tr><td>场景标识</td><td>场景唯一标识</td></tr>
+  <tr><td>场景编号</td><td>场景编号（如 NS-2026-TS-01）</td></tr>
+  <tr><td>场景名称</td><td>场景名称</td></tr>
+  <tr><td>保密等级</td><td>保密等级</td></tr>
+  <tr><td>难度等级</td><td>难度等级（1-5，5为最高）</td></tr>
+  <tr><td>主战略域</td><td>主战略域（军事/经济/网络/外交/信息/太空）</td></tr>
+  <tr><td>威胁等级</td><td>威胁等级（1-5）</td></tr>
+  <tr><td>推演轮数</td><td>建议推演轮数（3-6轮）</td></tr>
+  <tr><td>场景类型</td><td>场景类型（如"核心利益维护"、"能源安全"）</td></tr>
+  <tr><td>起始资金</td><td>起始资金（亿元）</td></tr>
+  <tr><td>起始声望</td><td>起始国际声望（0-100）</td></tr>
+  <tr><td>起始国内支持</td><td>起始国内支持度（0-100）</td></tr>
+  <tr><td>声望类型</td><td>声望类型（维护主权/侵略行动/科技竞争/不适用）</td></tr>
+  <tr><td>专属行动</td><td>专属行动编号数组（每个场景3个）</td></tr>
+  <tr><td>背景叙述</td><td>背景叙述（约100-150字）</td></tr>
+  <tr><td>参与方</td><td>参与方列表</td></tr>
+  <tr><td>可用响应域</td><td>可用响应域列表</td></tr>
+</table>
+
+<h2 class="section-title">4.2　推演流程详解</h2>
+
+<p>一次完整的推演包含以下阶段，从场景选择到最终评分形成闭环：</p>
+
+<div class="flow-step">
+  <div class="flow-num">1</div>
+  <div class="flow-content">
+    <div class="flow-title">选择场景</div>
+    <p>在"场景推演"标签页中，浏览38个场景卡片。每个卡片显示场景名称、编号、难度、威胁等级和类型标签。点击场景卡片进入场景详情。</p>
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">2</div>
+  <div class="flow-content">
+    <div class="flow-title">查看场景详情</div>
+    <p>场景详情页展示：背景叙述、参与方、可用响应域、起始资源（资金/声望/国内支持）、专属行动预览、力量配置和情报包。用户可在此评估场景难度和制定初步策略。</p>
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">3</div>
+  <div class="flow-content">
+    <div class="flow-title">选择阵营</div>
+    <p>每个场景定义了红方（我方）和蓝方（对手方）。用户可选择扮演红方或蓝方进行推演。智能系统始终作为导调方，负责态势推送、事件触发和裁决。选择阵营后点击"开始推演"进入推演界面。</p>
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">4</div>
+  <div class="flow-content">
+    <div class="flow-title">推演回合循环</div>
+    <p>推演采用回合制，每轮包含以下子阶段：</p>
+    <ul>
+      <li><strong>态势推送</strong>：智能导调方推送本轮态势变化和事件</li>
+      <li><strong>情报修正</strong>：根据已揭示的情报卡，系统自动应用域修正加成</li>
+      <li><strong>行动选择</strong>：用户从可用行动列表中选择行动（每轮5个行动点）</li>
+      <li><strong>确认行动</strong>：用户确认本轮所有行动，系统进入裁决阶段</li>
+      <li><strong>骰子裁决</strong>：系统为每个行动掷百分骰，根据成功率判定大成功/成功/失败</li>
+      <li><strong>智能对手反制</strong>：蓝方根据侵略性参数发起反制行动</li>
+      <li><strong>回合结算</strong>：更新六域状态、资金、声望、国内支持、升级度</li>
+    </ul>
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">5</div>
+  <div class="flow-content">
+    <div class="flow-title">推演结束与评分</div>
+    <p>推演在以下情况下结束：①达到场景设定轮数；②升级度达到5级（战争边缘态势失控）；③核心域状态归零。结束后系统计算综合评分并生成推演报告。</p>
+  </div>
+</div>
+
+<div class="flow-step">
+  <div class="flow-num">6</div>
+  <div class="flow-content">
+    <div class="flow-title">复盘报告</div>
+    <p>推演结束后自动生成推演复盘报告，包含：各轮决策回顾、成功率统计、六域状态变化曲线、智能对手反制记录、关键转折点分析、改进建议。</p>
+  </div>
+</div>
+
+<h2 class="section-title">4.3　阵营选择与对弈机制</h2>
+
+<h3 class="subsection-title">4.3.1　红蓝双方定义</h3>
+<p>每个场景定义了红方和蓝方两个阵营：</p>
+<ul>
+  <li><strong>红方（我方）</strong>：通常代表中国，维护国家主权、安全和发展利益</li>
+  <li><strong>蓝方（对手方）</strong>：根据场景不同，可能是某大国联盟、声索国、恐怖组织等</li>
+  <li><strong>导调方</strong>：智能系统自动担任，负责态势推送、事件触发和裁决</li>
+</ul>
+
+<h3 class="subsection-title">4.3.2　智能对手行为模型</h3>
+<p>蓝方智能对手根据当前升级等级调整侵略性参数：</p>
+<table>
+  <tr><th>升级等级</th><th>名称</th><th>智能对手侵略性</th><th>行为特征</th></tr>
+  <tr><td>1</td><td>低烈度</td><td>0.30</td><td>以观望和低强度试探为主，较少主动升级</td></tr>
+  <tr><td>2</td><td>中低烈度</td><td>0.50</td><td>开始主动施压，可能发起经济或外交反制</td></tr>
+  <tr><td>3</td><td>中烈度</td><td>0.65</td><td>多域对抗加剧，军事和网络反制频率上升</td></tr>
+  <tr><td>4</td><td>中高烈度</td><td>0.80</td><td>冲突风险显著，可能发起军事行动</td></tr>
+  <tr><td>5</td><td>高烈度</td><td>0.95</td><td>战争边缘态势，全力反制，极易失控</td></tr>
+</table>
+
+<h3 class="subsection-title">4.3.3　智能对手反制行动</h3>
+<p>每个战略行动都定义了对应的智能对手反制行动。当用户执行某个行动后，智能对手会根据侵略性参数决定是否发起反制。反制行动会对用户方造成负面效果。常见反制行动包括：</p>
+<table>
+  <tr><th>反制行动</th><th>名称</th><th>触发条件</th></tr>
+  <tr><td>军事升级</td><td>军事升级</td><td>用户执行高升级军事行动</td></tr>
+  <tr><td>对等军事应对</td><td>对等军事应对</td><td>用户执行中等军事行动</td></tr>
+  <tr><td>外交抗议</td><td>外交抗议</td><td>用户执行外交/军事威慑行动</td></tr>
+  <tr><td>外交拖延</td><td>外交拖延</td><td>用户执行外交谈判行动</td></tr>
+  <tr><td>经济报复</td><td>经济报复</td><td>用户执行经济制裁行动</td></tr>
+  <tr><td>网络攻击</td><td>网络攻击</td><td>用户执行网络行动</td></tr>
+  <tr><td>舆论升级</td><td>舆论升级</td><td>用户执行信息域行动</td></tr>
+</table>
+
+<h2 class="section-title">4.4　跨区域联机对弈系统</h2>
+
+<p>跨区域联机对弈系统是平台的高级功能模块，通过WebSocket实时通信技术实现两位玩家跨浏览器进行真实的红蓝双方对弈。与单人推演模式不同，联机对弈中双方均由真实玩家操控，AI系统担任导调方负责态势推送、事件触发和骰子裁决，确保公平性。</p>
+
+<h3 class="subsection-title">4.4.1　系统架构</h3>
+<p>联机对弈系统采用客户端-服务器架构：</p>
+<ul>
+  <li><strong>WebSocket服务器（server.js）</strong>：运行于9099端口，负责房间管理、玩家匹配、消息转发、AI导调逻辑和骰子裁决。所有游戏逻辑在服务器端执行，确保公平性。</li>
+  <li><strong>客户端模块（multiplayer.js）</strong>：嵌入平台前端，处理WebSocket连接、状态同步、UI交互和回调通知。支持自动重连（最多5次指数退避）和心跳测延迟。</li>
+  <li><strong>UI层（app.js）</strong>：四阶段状态机驱动UI渲染——大厅阶段、房间阶段、游戏阶段、结果阶段。通过回调函数响应服务器消息实时刷新界面。</li>
+</ul>
+
+<h3 class="subsection-title">4.4.2　对弈流程</h3>
+<table>
+  <tr><th style="width:15%">阶段</th><th style="width:20%">操作</th><th>说明</th></tr>
+  <tr><td><strong>1. 大厅</strong></td><td>创建/加入房间</td><td>玩家选择推演场景后创建房间（获得6位房间号），或输入房间号加入。支持公开房间快速匹配。</td></tr>
+  <tr><td><strong>2. 房间</strong></td><td>阵营选择与准备</td><td>双方玩家在房间大厅选择红方或蓝方阵营（根据场景SCENARIO_SIDES配置），选择完成后点击"准备就绪"。双方均准备后游戏自动开始。房间内支持实时聊天。</td></tr>
+  <tr><td><strong>3. 游戏</strong></td><td>多轮对弈</td><td>每轮流程：AI导调方推送态势事件→双方各自选择战略行动（消耗行动点）→双方提交行动→服务器掷骰裁决→双方查看裁决结果→进入下一轮。行动选项根据场景和阵营动态过滤（红蓝双方拥有不同的战略行动集）。</td></tr>
+  <tr><td><strong>4. 结果</strong></td><td>终局结算</td><td>达到最大轮次后游戏结束，显示最终比分、胜负判定和完整推演日志。支持投降和断线判负。</td></tr>
+</table>
+
+<h3 class="subsection-title">4.4.3　AI导调方功能</h3>
+<p>在联机对弈中，AI导调方承担以下职责：</p>
+<ul>
+  <li><strong>态势推送</strong>：每轮开始时推送场景相关的导调事件（台海、南海、经济、网络、边境等分类事件库），为双方提供决策背景。</li>
+  <li><strong>骰子裁决</strong>：双方提交行动后，服务器为每个行动掷百分骰，根据基础成功率（受升级度影响）判定大成功/成功/失败，计算本轮得分和六域效果变化。</li>
+  <li><strong>状态同步</strong>：实时同步六域状态、双方分数、升级度等游戏状态至双方客户端。</li>
+  <li><strong>终局判定</strong>：最大轮次结束后根据总分判定胜负，生成推演日志。</li>
+</ul>
+
+<h3 class="subsection-title">4.4.4　服务器部署</h3>
+<p>联机对弈服务器需独立启动：</p>
+<ul>
+  <li><strong>依赖安装</strong>：在nss-dashboard目录下执行 <code>npm install ws</code></li>
+  <li><strong>启动命令</strong>：执行 <code>node server.js</code>，服务器监听9099端口（可通过WS_PORT环境变量配置）</li>
+  <li><strong>连接地址</strong>：客户端自动根据当前页面协议（ws/wss）和主机名连接 <code>ws://主机名:9099</code></li>
+  <li><strong>心跳机制</strong>：客户端每5秒发送ping测量延迟，服务器每30秒检测超时（60秒无响应断开）</li>
+  <li><strong>房间管理</strong>：空房间自动清理（60秒间隔），空闲超过1小时的未开始房间自动关闭</li>
+</ul>
+
+<!-- ==================== 第五章 ==================== -->
+<h1 class="chapter-title">第五章　推演引擎核心规则</h1>
+
+<p>推演引擎是平台的裁决核心，负责行动成功率计算、骰子判定、效果结算、资源消耗和综合评分。本章详细说明引擎的全部规则和公式。</p>
+
+<h2 class="section-title">5.1　百分骰系统</h2>
+
+<p>平台采用百分骰作为基础裁决机制。每个行动执行时，系统生成1-100的随机整数（骰值），与该行动的成功率进行比较：</p>
+
+<div class="callout">
+  <div class="callout-title">骰子判定规则</div>
+  <table>
+    <tr><th>结果</th><th>条件</th><th>效果倍率</th><th>说明</th></tr>
+    <tr><td><span class="tag tag-green">大成功</span></td><td>骰值 ≤ 成功率 × 0.25</td><td>×1.5</td><td>行动效果增强50%，额外正面影响</td></tr>
+    <tr><td><span class="tag tag-blue">成功</span></td><td>骰值 ≤ 成功率</td><td>×1.0</td><td>行动按正常效果执行</td></tr>
+    <tr><td><span class="tag tag-red">失败</span></td><td>骰值 > 成功率</td><td>×0.3</td><td>仅30%效果，可能遭受反噬</td></tr>
+  </table>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">大成功概率说明</div>
+  <p>大成功阈值为成功率的25%。例如：某行动成功率为80%，则大成功阈值为20（80×0.25=20），即骰值≤20时触发大成功，概率为20%。这意味着成功率越高的行动，大成功概率也越高——鼓励用户通过力量配置和情报准备提高行动成功率。</p>
+</div>
+
+<h2 class="section-title">5.2　成功率计算公式</h2>
+
+<p>每个行动的最终成功率由基础成功率经过多因素修正后得出：</p>
+
+<div class="code-block">
+最终成功率 = 基础成功率
+           + 力量修正
+           + 声望修正
+           + 国内支持修正
+           + 情报修正
+           + 功能区加成
+           (上限100，下限5)
+</div>
+
+<h3 class="subsection-title">5.2.1　力量修正</h3>
+<p>当行动属于军事域时，系统计算当前场景所有军事域力量的平均战备度，修正公式为：</p>
+<div class="code-block">
+力量修正 = (军事力量平均战备度 - 50) × 0.3
+</div>
+<p>例如：场景中有4个军事力量，平均战备度为85，则力量修正 = (85-50) × 0.3 = +10.5%。</p>
+
+<h3 class="subsection-title">5.2.2　声望修正</h3>
+<div class="code-block">
+声望修正 = (当前国际声望 - 50) × 0.2
+</div>
+<p>声望高于50时获得正向修正，低于50时受到负向修正。例如：声望为65时，修正 = (65-50) × 0.2 = +3%。</p>
+
+<h3 class="subsection-title">5.2.3　国内支持修正</h3>
+<div class="code-block">
+国内支持修正 = (当前国内支持度 - 50) × 0.1
+</div>
+<p>国内支持度影响较小（系数0.1），反映民意对行动执行力的间接影响。</p>
+
+<h3 class="subsection-title">5.2.4　情报修正</h3>
+<p>已揭示的情报卡中，与行动域匹配的情报项提供额外成功率修正。情报修正值由情报项的修正值字段决定（通常为+5%到+15%）。空间域情报自动映射为网络域修正。</p>
+
+<h3 class="subsection-title">5.2.5　功能区加成</h3>
+<p>推演前在功能区执行的准备行动可为推演提供额外加成，包括：成功率加成（+3%到+5%）、额外行动点、先手优势、防御加成等。具体加成取决于功能区行动的类型和数量。</p>
+
+<h2 class="section-title">5.3　资金系统</h2>
+
+<p>资金是推演中的核心战略资源，用于执行行动（资金消耗）和衡量经济状态。每个场景设有起始预算，推演过程中通过行动消耗和科技研发收益动态变化。</p>
+
+<h3 class="subsection-title">5.3.1　资金消耗</h3>
+<p>每个战略行动定义了资金消耗字段（单位：亿元），从0到2000不等。例如：</p>
+<ul>
+  <li>外交声明：10亿元</li>
+  <li>网络情报搜集：100亿元</li>
+  <li>前沿军事威慑部署：800亿元</li>
+  <li>科技自立攻关：2000亿元</li>
+  <li>精确军事打击：1500亿元</li>
+</ul>
+
+<h3 class="subsection-title">5.3.2　科技研发收益</h3>
+<p>部分科技类行动执行后会在下一轮产生资金收益。收益金额由推演规则的科技研发收益映射表定义：</p>
+<table>
+  <tr><th>行动</th><th>下轮收益（亿元）</th><th>行动</th><th>下轮收益（亿元）</th></tr>
+  <tr><td>科技自立攻关</td><td>300</td><td>人民币国际化推进</td><td>200</td></tr>
+  <tr><td>芯片自主攻关</td><td>350</td><td>碳减排技术突破</td><td>300</td></tr>
+  <tr><td>量子技术突破</td><td>300</td><td>能源转型推进</td><td>300</td></tr>
+  <tr><td>供应链国产替代</td><td>300</td><td>稀土下游深加工</td><td>250</td></tr>
+  <tr><td>跨境支付系统建设</td><td>200</td><td>基因数据自主平台</td><td>250</td></tr>
+</table>
+
+<h3 class="subsection-title">5.3.3　经济基础收益</h3>
+<p>每轮结束时，如果经济域状态≥50，系统自动按当前资金的3%生成基础收益：</p>
+<div class="code-block">
+经济基础收益 = 当前资金 × 0.03 （仅当经济域 ≥ 50 时生效）
+</div>
+
+<h3 class="subsection-title">5.3.4　资金评分</h3>
+<p>推演结束时的资金评分采用20分下限公式：</p>
+<div class="code-block">
+资金评分 = 20 + 取大值(0, 剩余资金/起始资金) × 80
+（结果限制在0-100之间）
+</div>
+<div class="callout callout-warn">
+  <div class="callout-title">设计说明</div>
+  <p>20分下限确保即使用户消耗了大部分预算（合理的战略行为），资金评分也不会归零。这避免了"不花钱=高分"的逆向激励，鼓励用户积极使用资源达成战略目标。</p>
+</div>
+
+<h2 class="section-title">5.4　声望系统</h2>
+
+<p>国际声望反映中国在国际社会中的形象和影响力。不同场景类型适用不同的声望规则：</p>
+
+<h3 class="subsection-title">5.4.1　声望类型</h3>
+<table>
+  <tr><th>类型</th><th>适用场景</th><th>战争行动惩罚倍率</th><th>和平行动增长倍率</th></tr>
+  <tr><td>维护主权</td><td>维护主权类（台海、南海、边境等）</td><td>×1.5</td><td>×1.0</td></tr>
+  <tr><td>侵略行动</td><td>侵略行动类</td><td>×0.5</td><td>×1.0</td></tr>
+  <tr><td>科技竞争</td><td>科技竞争类（量子、太空碎片、基因数据）</td><td>×1.0</td><td>×1.0</td></tr>
+  <tr><td>不适用</td><td>犯罪/恐怖组织类（网络攻击、混合战争、认知战、生物安全）</td><td>×0（不生效）</td><td>×0（不生效）</td></tr>
+</table>
+
+<h3 class="subsection-title">5.4.2　战争行动与和平行动判定</h3>
+<div class="code-block">
+和平行动判定：行动升级度 ≤ 0 且 行动声望效果 > 0
+战争行动判定：行动升级度 ≥ 2
+</div>
+
+<h3 class="subsection-title">5.4.3　声望变化计算</h3>
+<div class="code-block">
+战争行动声望变化 = 行动声望效果 × 战争惩罚倍率[场景类型]
+和平行动声望变化 = 行动声望效果 × 和平增长倍率[场景类型]（下轮结算）
+</div>
+
+<div class="callout">
+  <div class="callout-title">示例</div>
+  <p>在台海场景（维护主权类型）中执行"精确军事打击"（声望效果=-15，升级度=3）：</p>
+  <p>声望变化 = -15 × 1.5 = -22.5（即时扣除）</p>
+  <p>在印太场景（维护主权类型）中执行"高级别峰会"（声望效果=10，升级度=-2）：</p>
+  <p>声望变化 = 10 × 1.0 = +10（下轮结算增长）</p>
+</div>
+
+<h2 class="section-title">5.5　升级阶梯与智能对手行为</h2>
+
+<p>升级度反映当前对抗的烈度水平，从1到5共5个等级。用户的军事行动和部分高烈度行动会增加升级度，外交谈判和和平行动可降低升级度。</p>
+
+<h3 class="subsection-title">5.5.1　升级度变化</h3>
+<p>每轮结束后，系统汇总所有行动的升级度值，计算该轮净升级度变化：</p>
+<div class="code-block">
+本轮升级度变化 = Σ(所有行动的升级度值)
+当前升级度 = 取大值(1, 取小值(5, 上一轮升级度 + 本轮变化))
+</div>
+
+<h3 class="subsection-title">5.5.2　升级度对智能对手行为的影响</h3>
+<p>智能对手侵略性参数直接决定蓝方发起反制行动的概率：</p>
+<div class="code-block">
+智能对手反制概率 = 侵略性参数 × (0.5 + 随机扰动0.3)
+</div>
+<p>在升级度3（中烈度）时，智能对手侵略性为0.65，反制概率约为32.5%-65%。在升级度5（高烈度）时，智能对手侵略性为0.95，几乎必定发起反制。</p>
+
+<h2 class="section-title">5.6　评分系统</h2>
+
+<p>推演结束后，系统根据五项加权指标计算综合评分（0-100）：</p>
+
+<table>
+  <tr><th>指标</th><th>权重</th><th>计算方式</th><th>说明</th></tr>
+  <tr><td>六域状态</td><td>35%</td><td>六域状态平均值</td><td>军事/经济/网络/外交/信息/国内六域的综合状态</td></tr>
+  <tr><td>国际声望</td><td>20%</td><td>最终声望值</td><td>反映国际社会对中国行动的认可度</td></tr>
+  <tr><td>国内支持</td><td>20%</td><td>最终国内支持度</td><td>反映国内民众对政策的支持程度</td></tr>
+  <tr><td>资金状态</td><td>10%</td><td>20 + 取大值(0, 剩余/起始)×80</td><td>20分下限的资金评分</td></tr>
+  <tr><td>升级控制</td><td>15%</td><td>(5 - 最终升级度) × 20</td><td>低升级度=高分，升级度5=0分</td></tr>
+</table>
+
+<div class="code-block">
+综合评分 = 六域均值 × 0.35 + 声望 × 0.20 + 国内支持 × 0.20 + 资金评分 × 0.10 + 升级控制 × 0.15
+</div>
+
+<div class="callout callout-success">
+  <div class="callout-title">评分等级</div>
+  <ul>
+    <li><strong>85-100</strong>：战略胜利——出色完成战略目标，全域优势明显</li>
+    <li><strong>70-84</strong>：战术胜利——达成主要目标，部分域有不足</li>
+    <li><strong>55-69</strong>：僵持——双方均未取得决定性优势</li>
+    <li><strong>40-54</strong>：战术失利——主要目标未达成，多域处于劣势</li>
+    <li><strong>0-39</strong>：战略失败——核心利益受损，局势失控</li>
+  </ul>
+</div>
+
+<!-- ==================== 第六章 ==================== -->
+<h1 class="chapter-title">第六章　力量战备与情报系统</h1>
+
+<h2 class="section-title">6.1　场景化力量配置</h2>
+
+<p>每个场景拥有独特的军事力量配置，替代了早期版本中所有场景共用同一套力量列表的设计。力量配置直接影响军事域行动的成功率修正。</p>
+
+<h3 class="subsection-title">6.1.1　力量数据结构</h3>
+<p>每个力量项包含以下字段：</p>
+<table>
+  <tr><th style="width:15%">字段</th><th>说明</th></tr>
+  <tr><td>军种代码</td><td>军种代码（陆军/海军/空军/火箭军/军事航天/网络空间/信息支援/联勤保障/武警/海警局/民兵预备役）</td></tr>
+  <tr><td>战备度</td><td>战备度（0-100），影响军事域行动修正</td></tr>
+  <tr><td>状态</td><td>状态（已部署/高度戒备/待命/活跃）</td></tr>
+  <tr><td>部署位置</td><td>部署位置</td></tr>
+  <tr><td>装备</td><td>装备描述</td></tr>
+  <tr><td>备注</td><td>备注信息</td></tr>
+</table>
+
+<h3 class="subsection-title">6.1.2　力量对推演的影响</h3>
+<p>军事域行动执行时，系统自动计算场景中所有军事域力量的平均战备度：</p>
+<div class="code-block">
+军事力量平均战备度 = Σ(军事力量战备度) / 军事力量数量
+力量修正 = (平均战备度 - 50) × 0.3
+</div>
+<p>不同场景的军事力量配置差异很大。例如：</p>
+<ul>
+  <li><strong>台海场景</strong>：海军(88)、空军(92)、陆军(80)、火箭军(95)、军事航天(88)、网络空间(90)、信息支援(85)、联勤保障(82)、海警局(90)——全域力量齐备，平均战备度高</li>
+  <li><strong>经济制裁场景</strong>：网络空间(85)、信息支援(78)、联勤保障(72)、武警(75)——少量经济安保力量</li>
+  <li><strong>网络攻防场景</strong>：网络空间(92)、信息支援(82)、军事航天(78)、武警(78)——以网络战力量为主</li>
+</ul>
+
+<h3 class="subsection-title">6.1.3　军种行动映射</h3>
+<p>每个战略行动通过行动军种映射表映射到对应军种。执行行动时，对应军种的战备度越高，行动效果越好。映射关系示例：</p>
+<table>
+  <tr><th>行动</th><th>军种映射</th></tr>
+  <tr><td>前沿军事威慑部署</td><td>海军</td></tr>
+  <tr><td>联合军事演习</td><td>空军</td></tr>
+  <tr><td>精确军事打击</td><td>火箭军</td></tr>
+  <tr><td>网络防御加固</td><td>网络空间</td></tr>
+  <tr><td>岛礁建设加固</td><td>海军</td></tr>
+  <tr><td>边境基建加速</td><td>陆军</td></tr>
+</table>
+
+<h3 class="subsection-title">6.1.4　军种体系（十一大军种）</h3>
+<p>平台基于2024年军队改革后的编制体系，设置十一个军种力量类别，覆盖传统作战、新型作战、保障和国内安全等全域力量：</p>
+<table>
+  <tr><th style="width:15%">军种</th><th style="width:10%">域</th><th>主要职能</th></tr>
+  <tr><td>陆军</td><td>军事</td><td>地面作战、两栖登陆、边境防御、山地高原作战</td></tr>
+  <tr><td>海军</td><td>军事</td><td>海上作战、航母编队、潜艇力量、远洋护航</td></tr>
+  <tr><td>空军</td><td>军事</td><td>空中作战、防空识别区管控、远程投送、战略轰炸</td></tr>
+  <tr><td>火箭军</td><td>军事</td><td>战略导弹威慑、核反击、反航母弹道导弹、反卫星</td></tr>
+  <tr><td>军事航天部队</td><td>太空</td><td>卫星运营、太空态势感知、轨道对抗、北斗导航</td></tr>
+  <tr><td>网络空间部队</td><td>网络</td><td>网络攻防、金融网络防护、数据安全、溯源反制</td></tr>
+  <tr><td>信息支援部队</td><td>信息</td><td>电子战、通信保障、认知域作战、频谱管控</td></tr>
+  <tr><td>联勤保障部队</td><td>后勤</td><td>战略投送、仓储物流、海外保障、应急物资调配</td></tr>
+  <tr><td>武警部队</td><td>国内</td><td>国内安全、反恐防暴、边境管控、设施安保</td></tr>
+  <tr><td>海警局</td><td>海上执法</td><td>海上执法巡航、岛礁周边管控、争议海域巡航</td></tr>
+  <tr><td>民兵预备役</td><td>国防动员</td><td>海上民兵、边防民兵、抢险救灾、基层动员</td></tr>
+</table>
+<p>其中，军事航天部队、网络空间部队、信息支援部队为2024年军改后由原战略支援部队拆分组建的三个独立兵种，分别负责太空、网络和信息支援领域。海警局从武警部队中单列，专司海上执法。联勤保障部队和民兵预备役为新增力量类别，分别覆盖战略后勤和国防动员领域。</p>
+
+<h2 class="section-title">6.2　情报中心与情报融合</h2>
+
+<h3 class="subsection-title">6.2.1　场景化情报包</h3>
+<p>每个场景配置了专属情报包，包含3-5条情报项。情报在推演中逐轮揭示，为行动提供域修正加成。</p>
+
+<p>情报项数据结构：</p>
+<table>
+  <tr><th style="width:15%">字段</th><th>说明</th></tr>
+  <tr><td>情报标识</td><td>情报唯一标识</td></tr>
+  <tr><td>情报来源</td><td>情报来源（图像情报/信号情报/人力情报/开源情报）</td></tr>
+  <tr><td>情报内容</td><td>情报内容摘要</td></tr>
+  <tr><td>可靠度</td><td>可靠度（0-100%）</td></tr>
+  <tr><td>揭示轮次</td><td>揭示轮次</td></tr>
+  <tr><td>修正效果</td><td>修正效果（域和修正值）</td></tr>
+</table>
+
+<h3 class="subsection-title">6.2.2　情报修正机制</h3>
+<p>当情报被揭示后，系统自动将其修正值应用到对应域的所有行动上。修正流程：</p>
+<ol>
+  <li>每轮开始时，系统揭示当前轮次对应的情报卡</li>
+  <li>已揭示的情报修正值累加到对应域的行动成功率上</li>
+  <li>空间域情报自动映射为网络域修正</li>
+  <li>情报修正持续到推演结束</li>
+</ol>
+
+<div class="callout">
+  <div class="callout-title">情报修正示例</div>
+  <p>假设第2轮揭示了情报项"敌方网络防御存在漏洞"（修正效果：网络域+12），则此后所有网络域行动的成功率额外+12%。</p>
+</div>
+
+<h3 class="subsection-title">6.2.3　多源情报融合规则</h3>
+<p>综合战略推演中心设有10条情报融合规则，用于识别多源情报之间的关联模式。当两个或多个情报信号同时出现时，系统自动触发融合分析，生成更高层级的威胁预判。</p>
+
+<table>
+  <tr><th>编号</th><th>融合规则</th><th>置信度</th></tr>
+  <tr><td>1</td><td>军事调动+网络异常→联合攻击预警</td><td>85%</td></tr>
+  <tr><td>2</td><td>外交照会+经济异动→制裁预判</td><td>78%</td></tr>
+  <tr><td>3</td><td>舆论操控+社会事件→认知域攻击</td><td>72%</td></tr>
+  <tr><td>4</td><td>太空活动+通信异常→太空对抗预判</td><td>80%</td></tr>
+  <tr><td>5</td><td>军事集结+外交沉默→突袭预警</td><td>88%</td></tr>
+  <tr><td>6</td><td>网络渗透+供应链异动→断链攻击</td><td>75%</td></tr>
+  <tr><td>7</td><td>金融异动+外交施压→金融制裁预判</td><td>82%</td></tr>
+  <tr><td>8</td><td>生物异常+信息操纵→生物信息战</td><td>68%</td></tr>
+  <tr><td>9</td><td>稀土出口+科技封锁→技术围堵预判</td><td>76%</td></tr>
+  <tr><td>10</td><td>航道异常+能源储备→能源封锁预判</td><td>84%</td></tr>
+</table>
+
+<!-- ==================== 第七章 ==================== -->
+<h1 class="chapter-title">第七章　八大功能区系统</h1>
+
+<h2 class="section-title">7.1　功能区总览与协同机制</h2>
+
+<p>功能区是平台推演的"战略纵深"，不是孤立的工具集合，而是与推演引擎深度联动的支撑系统。功能区在推演前、中、后三个阶段分别发挥作用。各功能区的关键指标（KPI）均通过系统数据动态计算，与情报库、力量战备、六域态势、推演记录等核心数据实时联动，确保指标值反映系统真实状态而非静态预设值。</p>
+
+<table>
+  <tr><th style="width:15%">阶段</th><th style="width:25%">功能区作用</th><th>具体效果</th></tr>
+  <tr><td><strong>推演前</strong></td><td>功能区准备</td><td>提供情报加成、力量修正、训练加成、经济条件</td></tr>
+  <tr><td><strong>推演中</strong></td><td>功能区支援</td><td>每轮可呼叫一个功能区提供战场支援（成功率加成、额外行动点等）</td></tr>
+  <tr><td><strong>推演后</strong></td><td>推演反哺</td><td>推演结果反哺功能区状态，生成训练素材和复盘报告</td></tr>
+</table>
+
+<h3 class="subsection-title">7.1.1　八大功能区列表</h3>
+<table>
+  <tr><th>编号</th><th>功能区名称</th><th>图标</th><th>核心职能</th></tr>
+  <tr><td>1</td><td>全域协同视图</td><td>🎯</td><td>总览所有功能区协同状态，管理联合行动与跨域协调</td></tr>
+  <tr><td>2</td><td>战略情报中心</td><td>📡</td><td>情报收集、威胁评估、溯源分析，为推演提供情报优势</td></tr>
+  <tr><td>3</td><td>作战指挥中心</td><td>⚔️</td><td>力量部署、战备管理、联合作战规划，提供军事优势</td></tr>
+  <tr><td>4</td><td>模拟训练中心</td><td>🎓</td><td>历史复盘与技能训练，完成后提供推演加成</td></tr>
+  <tr><td>5</td><td>后勤保障中心</td><td>🚚</td><td>供应链与储备管理，推演中提供资源支援</td></tr>
+  <tr><td>6</td><td>国防经济中心</td><td>💰</td><td>经济战与金融防御，推演前提供经济条件</td></tr>
+  <tr><td>7</td><td>科技信息战中心</td><td>🔬</td><td>网络战与认知战，推演中提供技术支援</td></tr>
+  <tr><td>8</td><td>推演复盘中心</td><td>📊</td><td>推演分析与经验提炼（推演复盘系统）</td></tr>
+</table>
+
+<h3 class="subsection-title">7.1.2　协同效应</h3>
+<p>功能区间存在协同关系。在功能区A执行行动时，可能会自动提升功能区B的关键指标。例如：</p>
+<ul>
+  <li>情报中心执行"多源情报搜集"→ 指挥中心协同+3</li>
+  <li>指挥中心执行"前沿力量部署"→ 后勤中心协同+6，情报中心协同+3</li>
+  <li>科技中心执行"人工智能情报辅助"→ 情报中心协同+6，指挥中心协同+2</li>
+</ul>
+
+<h2 class="section-title">7.2　战略情报中心</h2>
+
+<p>战略情报中心负责多源情报收集、威胁评估和溯源分析。中心设有3个关键指标和6个可执行行动。</p>
+
+<h3 class="subsection-title">7.2.1　关键指标</h3>
+<table>
+  <tr><th>指标</th><th>默认值</th><th>说明</th></tr>
+  <tr><td>情报收集率</td><td>72%</td><td>多源情报收集覆盖度</td></tr>
+  <tr><td>分析研判力</td><td>68分</td><td>情报分析与研判能力</td></tr>
+  <tr><td>预警时效性</td><td>65%</td><td>威胁预警的提前量</td></tr>
+</table>
+
+<h3 class="subsection-title">7.2.2　可执行行动</h3>
+<table>
+  <tr><th>行动</th><th>消耗</th><th>推演加成</th></tr>
+  <tr><td>启动多源情报搜集</td><td>2点</td><td>推演中额外揭示2张情报卡</td></tr>
+  <tr><td>深度溯源分析</td><td>3点</td><td>网络域行动成功率+5%</td></tr>
+  <tr><td>战略预警部署</td><td>2点</td><td>推演首轮获得先手优势</td></tr>
+  <tr><td>情报共享协调</td><td>1点</td><td>额外揭示1张情报卡</td></tr>
+  <tr><td>反情报行动</td><td>3点</td><td>网络防御力+8</td></tr>
+  <tr><td>人工智能情报辅助分析</td><td>2点</td><td>全域行动成功率+3%</td></tr>
+</table>
+
+<h2 class="section-title">7.3　作战指挥中心</h2>
+
+<p>作战指挥中心负责力量部署、战备管理和联合作战规划。中心设有3个关键指标和6个可执行行动。</p>
+
+<h3 class="subsection-title">7.3.1　关键指标</h3>
+<table>
+  <tr><th>指标</th><th>默认值</th><th>说明</th></tr>
+  <tr><td>战备水平</td><td>78%</td><td>全军战备状态综合评分</td></tr>
+  <tr><td>部署灵活度</td><td>70分</td><td>快速部署和调整能力</td></tr>
+  <tr><td>联合作战力</td><td>75分</td><td>多军种协同作战能力</td></tr>
+</table>
+
+<h3 class="subsection-title">7.3.2　可执行行动</h3>
+<table>
+  <tr><th>行动</th><th>消耗</th><th>推演加成</th></tr>
+  <tr><td>前沿力量部署</td><td>3点</td><td>军事域行动修正+8</td></tr>
+  <tr><td>提升战备等级</td><td>2点</td><td>军事域成功率+5%</td></tr>
+  <tr><td>联合作战演练</td><td>3点</td><td>解锁联合行动能力</td></tr>
+  <tr><td>战略威慑部署</td><td>2点</td><td>对手智能系统侵略性-10%</td></tr>
+  <tr><td>快速反应准备</td><td>2点</td><td>推演首轮额外1行动点</td></tr>
+  <tr><td>指挥系统加固</td><td>1点</td><td>军事防御+5</td></tr>
+</table>
+
+<h2 class="section-title">7.4　后勤保障中心</h2>
+<p>后勤保障中心负责战略投送、供应链管理和应急动员。中心关键指标包括战略投送力(74%)、补给效率(72%)和应急动员力(68%)。可执行行动包括战略预置部署、补给线建设、战略储备补充、应急动员准备、军民融合物流和战略投送演练。</p>
+
+<h2 class="section-title">7.5　国防经济中心</h2>
+<p>国防经济中心负责经济战规划、金融防御和贸易保障。中心关键指标包括经济韧性(76%)、金融安全(70%)和贸易保障力(73%)。可执行行动包括金融防火墙建设、战略物资储备、贸易多元化、经济反制准备、国防工业动员和人民币结算推进。</p>
+
+<h2 class="section-title">7.6　科技信息战中心</h2>
+<p>科技信息战中心负责网络战能力建设、认知域防御和技术优势构建。中心关键指标包括网络战力(79%)、信息防御力(72%)和技术优势度(68%)。可执行行动包括网络攻防体系建设、认知域防御部署、人工智能军事化、太空态势感知、电子战能力建设和量子通信部署。</p>
+
+<h2 class="section-title">7.7　模拟训练中心</h2>
+<p>模拟训练中心是平台的教育训练核心，提供24个角色专属训练模块。每个模块包含完整的训练流程：知识讲解→案例分析→实战练习→自我检测→综合考核→速查卡。</p>
+
+<p>完成训练模块后，用户获得推演加成效果，包括：成功率加成、额外行动点、情报卡揭示等。训练成绩越高，加成效果越显著。</p>
+
+<h2 class="section-title">7.8　推演复盘中心</h2>
+<p>推演复盘中心在每次推演结束后自动生成详细报告，包含：</p>
+<ul>
+  <li><strong>决策回顾</strong>：逐轮回放用户的行动选择和结果</li>
+  <li><strong>成功率统计</strong>：大成功/成功/失败的比例分析</li>
+  <li><strong>六域状态曲线</strong>：各域状态随轮次变化的趋势图</li>
+  <li><strong>智能对手反制记录</strong>：蓝方反制行动的时序和效果</li>
+  <li><strong>关键转折点</strong>：标注影响推演走向的关键决策</li>
+  <li><strong>改进建议</strong>：基于推演数据的策略优化建议</li>
+</ul>
+
+<h2 class="section-title">7.9　动态数据联动机制</h2>
+
+<p>平台采用全链路数据联动设计，所有功能区KPI、态势总览指标、威胁等级等数据均由系统底层数据源动态计算，不存在孤立的静态假数据。主要联动关系如下：</p>
+
+<table>
+  <tr><th style="width:25%">数据源</th><th style="width:25%">联动目标</th><th>联动机制</th></tr>
+  <tr><td>FORCES（十一大军种战备数据）</td><td>DOMAINS（六域安全态势）</td><td>syncDomainMetrics()函数实时从军种战备数据计算军事域部署率、平均战备度、趋势值，网络/太空/信息域同步对应军种力量数据</td></tr>
+  <tr><td>INTEL + THREATS（情报与威胁）</td><td>战略情报中心KPI</td><td>情报收集率由INTEL条目数和情报来源数动态计算，预警时效性由威胁严重度分布推算</td></tr>
+  <tr><td>FORCES（军种战备）</td><td>作战指挥中心KPI</td><td>战备水平由传统军种平均战备度计算，联合作战力由多军种协同指数推算</td></tr>
+  <tr><td>DOMAINS（六域态势）</td><td>国防经济/科技信息战中心KPI</td><td>经济域readiness映射为经济中心指标，网络域+信息域readiness映射为科技信息战中心指标</td></tr>
+  <tr><td>STATE.games（推演记录）</td><td>推演复盘中心KPI</td><td>复盘完成数、经验提炼量由历史推演场次动态统计</td></tr>
+  <tr><td>STATE.threatLevel</td><td>态势总览威胁条</td><td>威胁等级数值（0-100）实时驱动态势总览页威胁进度条和DEFCON等级描述</td></tr>
+  <tr><td>THREATS数组</td><td>情报中心优先目标面板</td><td>根据威胁严重度自动映射P1/P2/P3优先级，动态生成优先目标列表</td></tr>
+  <tr><td>ALL_CASES（100个案例）</td><td>案例库标签徽章</td><td>侧边栏案例库徽章数字由ALL_CASES.length动态计算</td></tr>
+</table>
+
+<!-- ==================== 第八章 ==================== -->
+<h1 class="chapter-title">第八章　综合战略推演中心</h1>
+
+<p>综合战略推演中心是平台的高级功能模块，提供跨场景、跨域的全局战略推演能力。包含场景串联引擎、信息串并中心和战略决策沙盘三大子系统。</p>
+
+<h2 class="section-title">8.1　场景串联引擎（8条推演链）</h2>
+
+<p>推演链将多个相关场景串联为一条完整的战略推演线，模拟跨域连锁反应。每条推演链定义了场景间的触发关系、传导效应和时延。</p>
+
+<table>
+  <tr><th>编号</th><th>推演链名称</th><th>难度</th><th>包含场景数</th><th>核心目标</th></tr>
+  <tr><td>1</td><td>台海全域联动推演</td><td>5</td><td>5</td><td>在台海军事行动中实现全域协调</td></tr>
+  <tr><td>2</td><td>印太战略破围推演</td><td>5</td><td>5</td><td>在印太方向实现多线突破</td></tr>
+  <tr><td>3</td><td>混合战争全域推演</td><td>5</td><td>6</td><td>识别混合战争信号，建立全域防御</td></tr>
+  <tr><td>4</td><td>中东能源安全推演</td><td>4</td><td>4</td><td>保障能源通道安全，管控核扩散</td></tr>
+  <tr><td>5</td><td>北极全域博弈推演</td><td>4</td><td>4</td><td>在北极新战略空间建立存在</td></tr>
+  <tr><td>6</td><td>科技突围全域推演</td><td>5</td><td>5</td><td>在科技战中实现自主突破</td></tr>
+  <tr><td>7</td><td>马六甲能源通道全域推演</td><td>4</td><td>5</td><td>保障马六甲海峡能源通道安全</td></tr>
+  <tr><td>8</td><td>量子未来战争全域推演</td><td>5</td><td>5</td><td>在量子科技革命中抢占制高点</td></tr>
+</table>
+
+<h3 class="subsection-title">8.1.1　推演链数据结构</h3>
+<p>每条推演链包含以下核心字段：</p>
+<ul>
+  <li><strong>参与场景</strong>：参与场景列表，每个场景标注角色（核心战场/网络域/经济域等）</li>
+  <li><strong>传导关系</strong>：场景间传导关系，包含触发条件、效应、时延和强度系数</li>
+  <li><strong>全局态势</strong>：全局态势状态（紧张度、军事、经济、网络、外交、信息、太空）</li>
+  <li><strong>战略目标</strong>：推演链总体战略目标</li>
+  <li><strong>关键决策点</strong>：4个关键战略决策点</li>
+</ul>
+
+<h3 class="subsection-title">8.1.2　传导效应示例</h3>
+<p>以"台海全域联动推演"为例，其传导关系包括：</p>
+<table>
+  <tr><th>源场景</th><th>目标场景</th><th>触发条件</th><th>效应</th><th>时延</th><th>强度</th></tr>
+  <tr><td>台海方向</td><td>网络空间攻防</td><td>军事升级</td><td>敌方网络报复</td><td>0-6小时</td><td>0.9</td></tr>
+  <tr><td>台海方向</td><td>经济制裁博弈</td><td>军事升级</td><td>西方经济制裁</td><td>24-72小时</td><td>0.8</td></tr>
+  <tr><td>台海方向</td><td>认知域作战</td><td>军事升级</td><td>国际舆论战</td><td>同步</td><td>0.85</td></tr>
+  <tr><td>台海方向</td><td>东海防空识别区</td><td>军事升级</td><td>侧翼牵制</td><td>12-24小时</td><td>0.6</td></tr>
+</table>
+
+<h2 class="section-title">8.2　信息串并中心（10条融合规则）</h2>
+
+<p>信息串并中心提供多源情报自动关联分析功能。当两个或多个情报信号同时出现时，系统根据10条融合规则自动生成高置信度的威胁预判。</p>
+
+<h3 class="subsection-title">8.2.1　融合规则详解</h3>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">融合规则1</span>
+    <span class="scenario-card-name">军事调动+网络异常→联合攻击预警</span>
+  </div>
+  <p><strong>情报来源</strong>：图像情报、信号情报</p>
+  <p><strong>关联域</strong>：军事安全、网络空间</p>
+  <p><strong>模式</strong>：敌方军事力量集结的同时，检测到针对我方关键基础设施的网络渗透活动</p>
+  <p><strong>置信度</strong>：85% — 当两个信号同时出现时，联合攻击概率为85%</p>
+  <p><strong>建议</strong>：提升至德尔塔级战备，启动关键基础设施网络防御，前沿部署反制力量</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">融合规则2</span>
+    <span class="scenario-card-name">外交照会+经济异动→制裁预判</span>
+  </div>
+  <p><strong>情报来源</strong>：开源情报、人力情报</p>
+  <p><strong>模式</strong>：对方密集发表强硬声明的同时，监测到资本异常流动和评级机构下调信号</p>
+  <p><strong>置信度</strong>：78% — 窗口期约7-14天</p>
+  <p><strong>建议</strong>：启动金融防御预案，加速外汇储备多元化，准备反制清单</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">融合规则5</span>
+    <span class="scenario-card-name">军事集结+外交沉默→突袭预警</span>
+  </div>
+  <p><strong>模式</strong>：对方军事力量异常集结，但外交渠道异常沉默（无照会、无声明）</p>
+  <p><strong>置信度</strong>：88% — 外交沉默+军事集结是最危险的突袭前兆</p>
+  <p><strong>建议</strong>：立即提升战备，启动应急预案，通过第三方渠道试探对方意图</p>
+</div>
+
+<p class="page-break">其余7条融合规则涵盖太空对抗预判、断链攻击预判、金融制裁预判、生物信息战预判、技术围堵预判和能源封锁预判，详见系统内"综合推演"→"信息串并"页面。</p>
+
+<h2 class="section-title">8.3　战略决策沙盘（18项决策）</h2>
+
+<p>战略决策沙盘提供18项全局性战略决策选项，每项决策都会对推演链中多个场景产生影响。决策分为军事类、经济类、外交类、科技类和综合类五大类别。</p>
+
+<table>
+  <tr><th>类别</th><th>决策项</th><th>影响范围</th></tr>
+  <tr><td rowspan="4">军事类</td><td>威慑强度选择</td><td>影响所有军事场景的智能对手侵略性</td></tr>
+  <tr><td>战备等级设定</td><td>影响全域力量修正</td></tr>
+  <tr><td>军力部署优先级</td><td>决定各战区资源分配</td></tr>
+  <tr><td>核威慑态势调整</td><td>影响核相关场景的升级阶梯</td></tr>
+  <tr><td rowspan="4">经济类</td><td>金融防御级别</td><td>影响金融制裁场景的抗压能力</td></tr>
+  <tr><td>供应链策略选择</td><td>影响供应链场景的韧性评分</td></tr>
+  <tr><td>稀土反制力度</td><td>影响科技竞争场景的资源筹码</td></tr>
+  <tr><td>能源转型速度</td><td>影响能源安全场景的通道依赖</td></tr>
+  <tr><td rowspan="4">外交类</td><td>联盟策略选择</td><td>影响外交场景的国际支持度</td></tr>
+  <tr><td>多边平台优先级</td><td>影响上合/金砖/联合国等平台效果</td></tr>
+  <tr><td>叙事策略设定</td><td>影响认知域作战场景的舆论效能</td></tr>
+  <tr><td>危机沟通机制</td><td>影响升级管控能力</td></tr>
+  <tr><td rowspan="3">科技类</td><td>技术路线选择</td><td>影响人工智能、量子、太空场景的研发效率</td></tr>
+  <tr><td>人才战略</td><td>影响科技行动的成功率修正</td></tr>
+  <tr><td>标准制定策略</td><td>影响数字主权场景的国际话语权</td></tr>
+  <tr><td rowspan="3">综合类</td><td>全域协同级别</td><td>影响跨域行动的联动加成</td></tr>
+  <tr><td>预备队配置</td><td>决定可用的失败挽救次数</td></tr>
+  <tr><td>推演节奏控制</td><td>影响每轮行动点分配策略</td></tr>
+</table>
+
+<!-- ==================== 第九章 ==================== -->
+<h1 class="chapter-title">第九章　角色差异化系统</h1>
+
+<h2 class="section-title">9.1　六大角色定义</h2>
+
+<p>平台内置六大角色，每个角色拥有差异化的推演模块、功能区优先级和场景偏好。角色系统模拟真实组织架构中的分工协作，使不同专业背景的用户都能找到适合自己的训练路径。</p>
+
+<table>
+  <tr><th>角色</th><th>图标</th><th>核心能力</th><th>推荐场景</th><th>功能区优先级</th></tr>
+  <tr><td>指挥员</td><td>🛡️</td><td>全域协同指挥、危机决策</td><td>台海、混合战争、朝鲜半岛</td><td>指挥→情报→后勤→经济→科技</td></tr>
+  <tr><td>情报分析员</td><td>📡</td><td>情报搜集研判、威胁预警</td><td>网络攻防、认知域作战、混合战争</td><td>情报→科技→指挥→经济→后勤</td></tr>
+  <tr><td>作战参谋</td><td>⚔️</td><td>联合作战规划、力量部署</td><td>台海、南海、中印边境</td><td>指挥→后勤→情报→科技→经济</td></tr>
+  <tr><td>经济分析师</td><td>📊</td><td>经济战推演、金融防御</td><td>经济制裁、金融战、供应链危机</td><td>经济→情报→后勤→指挥→科技</td></tr>
+  <tr><td>科技研究员</td><td>🔬</td><td>科技竞争推演、网络攻防</td><td>人工智能、量子科技、太空博弈</td><td>科技→情报→经济→指挥→后勤</td></tr>
+  <tr><td>后勤管理官</td><td>🚚</td><td>战略投送、供应链保障</td><td>中东、霍尔木兹、马六甲海峡</td><td>后勤→指挥→经济→情报→科技</td></tr>
+</table>
+
+<h2 class="section-title">9.2　角色专属推演模块</h2>
+
+<p>每个角色拥有4个专属推演模块，共计24个模块。模块难度从3到5递进，内容覆盖该角色的核心能力维度。</p>
+
+<h3 class="subsection-title">9.2.1　指挥员模块</h3>
+<table>
+  <tr><th>模块</th><th>名称</th><th>难度</th><th>核心训练点</th></tr>
+  <tr><td>1</td><td>联合全域指挥推演</td><td>5</td><td>5域协同调度、联动加成机制、联合行动审批</td></tr>
+  <tr><td>2</td><td>危机决策推演</td><td>4</td><td>15秒限时决策、不完整信息判断、压力管理</td></tr>
+  <tr><td>3</td><td>战略威慑推演</td><td>4</td><td>威慑梯级设计、对手红线判断、升级管控</td></tr>
+  <tr><td>4</td><td>全域态势研判推演</td><td>3</td><td>多源信息整合、态势预判、决策建议生成</td></tr>
+</table>
+
+<h3 class="subsection-title">9.2.2　情报分析员模块</h3>
+<table>
+  <tr><th>模块</th><th>名称</th><th>难度</th><th>核心训练点</th></tr>
+  <tr><td>1</td><td>多源情报融合推演</td><td>4</td><td>情报关联分析、置信度评估、融合规则应用</td></tr>
+  <tr><td>2</td><td>威胁预警推演</td><td>4</td><td>预警信号识别、时效性优化、误报控制</td></tr>
+  <tr><td>3</td><td>溯源分析推演</td><td>3</td><td>攻击溯源方法论、证据链构建、公开归因</td></tr>
+  <tr><td>4</td><td>战略研判推演</td><td>5</td><td>长期趋势研判、战略意图分析、政策建议</td></tr>
+</table>
+
+<h3 class="subsection-title">9.2.3　其他角色模块</h3>
+<p>作战参谋模块涵盖联合作战规划、力量部署优化、战术推演和作战评估。经济分析师模块涵盖经济战推演、金融防御、供应链博弈和能源经济。科技研究员模块涵盖网络攻防、人工智能军事化、太空博弈和量子科技竞争。后勤管理官模块涵盖战略投送、供应链保障、应急动员和基地保障。</p>
+
+<h2 class="section-title">9.3　训练教案系统（24个模块）</h2>
+
+<p>每个推演模块配有完整的训练教案，采用"五段式"教学法：</p>
+
+<table>
+  <tr><th style="width:15%">阶段</th><th style="width:15%">类型</th><th>内容</th></tr>
+  <tr><td>第1段</td><td>知识讲解</td><td>理论框架、核心概念、规则说明，配图表和公式</td></tr>
+  <tr><td>第2段</td><td>案例分析</td><td>历史案例深度分析（如克里米亚、海湾战争），提炼经验教训</td></tr>
+  <tr><td>第3段</td><td>实战练习</td><td>基于模拟场景的决策练习，含预期分析和常见错误</td></tr>
+  <tr><td>第4段</td><td>自我检测</td><td>3-5道选择题，检验理解程度，附详细解析</td></tr>
+  <tr><td>第5段</td><td>综合考核</td><td>完整推演演练，设定达标标准和自检清单</td></tr>
+</table>
+
+<p>此外，每个模块配有<strong>速查卡</strong>，提炼核心术语和关键规则，便于快速查阅。</p>
+
+<div class="callout">
+  <div class="callout-title">训练加成机制</div>
+  <p>完成训练模块后，用户在后续推演中获得对应加成。例如：完成"联合全域指挥推演"训练后，全域行动成功率+5%；完成"多源情报融合推演"后，情报卡揭示数量+2。训练成绩越高，加成越显著。</p>
+</div>
+
+<!-- ==================== 第十章 ==================== -->
+<h1 class="chapter-title">第十章　案例库与训练系统</h1>
+
+<h2 class="section-title">10.1　案例库</h2>
+
+<p>平台内置100个历史与战略案例，覆盖现代战争、经济博弈、外交谈判、情报行动、科技竞争等多个领域。案例库支持按类别、关键词和难度检索。</p>
+
+<h3 class="subsection-title">10.1.1　案例分类</h3>
+<table>
+  <tr><th>类别</th><th>案例数</th><th>代表案例</th></tr>
+  <tr><td>军事冲突</td><td>25</td><td>海湾战争、科索沃战争、克里米亚危机、纳卡冲突</td></tr>
+  <tr><td>经济博弈</td><td>20</td><td>美日贸易战、亚洲金融危机、中美贸易摩擦、环球金融报文系统制裁</td></tr>
+  <tr><td>外交谈判</td><td>15</td><td>古巴导弹危机、朝核六方会谈、伊核协议、巴黎气候协定</td></tr>
+  <tr><td>情报行动</td><td>15</td><td>珍珠港情报失败、古巴导弹情报、本拉登追踪、斯诺登事件</td></tr>
+  <tr><td>科技竞争</td><td>15</td><td>卫星导航竞争、半导体战争、5G标准之争、量子竞赛</td></tr>
+  <tr><td>混合战争</td><td>10</td><td>俄罗斯格鲁吉亚战争、乌克兰危机信息战、颜色革命</td></tr>
+</table>
+
+<h3 class="subsection-title">10.1.2　案例数据结构</h3>
+<p>每个案例包含：案例标题、发生时间、涉及方、背景叙述、事件经过、关键决策点、结果与影响、经验教训、关联场景。用户可在案例详情页直接跳转到关联场景进行推演。</p>
+
+<h2 class="section-title">10.2　训练系统操作指南</h2>
+
+<h3 class="subsection-title">10.2.1　开始训练</h3>
+<ol>
+  <li>在主界面点击"训练中心"标签</li>
+  <li>系统根据当前角色显示该角色的4个专属训练模块</li>
+  <li>点击模块卡片进入训练界面</li>
+  <li>训练按"知识讲解→案例分析→实战练习→自我检测→综合考核"顺序进行</li>
+  <li>每个阶段完成后自动进入下一阶段</li>
+  <li>全部完成后获得训练证书和推演加成</li>
+</ol>
+
+<h3 class="subsection-title">10.2.2　训练数据追踪</h3>
+<p>系统自动记录用户的训练进度和成绩，包括：</p>
+<ul>
+  <li>已完成模块数 / 总模块数</li>
+  <li>各模块的综合得分</li>
+  <li>自我检测正确率</li>
+  <li>综合考核达标情况</li>
+  <li>累计训练时长</li>
+</ul>
+
+<!-- ==================== 第十一章 ==================== -->
+<h1 class="chapter-title">第十一章　38个场景详述</h1>
+
+<p>本章逐一介绍平台38个推演场景的详细信息，包括背景设定、对弈双方、起始资源和专属行动。</p>
+
+<!-- 场景1 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-TS-01</span>
+    <span class="scenario-card-name">台海方向战略博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span><span class="tag tag-red">威胁5</span></span>
+    <span>类型：核心利益维护</span>
+    <span>域：军事</span>
+    <span>轮数：5</span>
+  </div>
+  <p><strong>背景</strong>：2026年3月，某大国国会通过新一轮对台军售法案，总额达28亿美元，包含先进防空导弹和雷达系统。台地区领导人发表所谓"国际参与"倡议，实质推动"渐进式台独"。台海局势急剧升温。</p>
+  <p><strong>参与方</strong>：某大国、台当局、日本</p>
+  <p><strong>起始资源</strong>：资金5000亿 / 声望55 / 国内支持72 / 声望类型：维护主权</p>
+  <p><strong>红方</strong>：中国 — 维护国家统一，捍卫领土主权完整</p>
+  <p><strong>蓝方</strong>：美台联盟 — 阻挠统一进程，维持台海分裂现状</p>
+  <p><strong>专属行动</strong>：封锁台湾海峡、两栖威慑演习、导弹威慑部署</p>
+  <p><strong>力量配置</strong>：海军(88)、空军(92)、陆军(80)、火箭军(95)、军事航天(88)、网络空间(90)、信息支援(85)、联勤保障(82)、海警局(90)</p>
+</div>
+
+<!-- 场景2 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-SCS-02</span>
+    <span class="scenario-card-name">南海方向权益维护</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span><span class="tag tag-amber">威胁4</span></span>
+    <span>类型：海洋权益博弈</span>
+    <span>域：军事</span>
+    <span>轮数：5</span>
+  </div>
+  <p><strong>背景</strong>：2026年5月，某声索国在南海争议海域启动新一轮油气钻探作业，并同时与域外大国举行联合海上巡逻。域外大国派遣双航母战斗群进入南海。</p>
+  <p><strong>起始资源</strong>：资金3500亿 / 声望60 / 国内支持68</p>
+  <p><strong>专属行动</strong>：岛礁建设加固、海上巡航执法、海上联合演训</p>
+  <p><strong>力量配置</strong>：海军(85)、空军(82)、火箭军(88)、军事航天(80)、网络空间(78)、联勤保障(75)、海警局(92)、民兵预备役(72)</p>
+</div>
+
+<!-- 场景3 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-BD-03</span>
+    <span class="scenario-card-name">中印边境战略管控</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span><span class="tag tag-blue">威胁3</span></span>
+    <span>类型：边境安全管控</span>
+    <span>域：军事</span>
+    <span>轮数：4</span>
+  </div>
+  <p><strong>背景</strong>：2026年夏季，印方在边境争议地区加速基础设施建设，并在实控线印方一侧大规模增兵。双方在多个对峙点发生摩擦。</p>
+  <p><strong>起始资源</strong>：资金2000亿 / 声望58 / 国内支持70</p>
+  <p><strong>专属行动</strong>：边境增兵对峙、脱离接触谈判、边境基建加速</p>
+  <p><strong>力量配置</strong>：陆军(82)、空军(78)、军事航天(75)、信息支援(72)、联勤保障(70)、武警(85)</p>
+</div>
+
+<!-- 场景4 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-EC-04</span>
+    <span class="scenario-card-name">经济安全与制裁博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span><span class="tag tag-blue">威胁3</span></span>
+    <span>类型：经济安全</span>
+    <span>域：经济</span>
+    <span>轮数：4</span>
+  </div>
+  <p><strong>背景</strong>：某大国宣布对中国实施新一轮全面经济制裁，覆盖半导体、人工智能、量子计算等关键技术领域，并联合盟友实施出口管制。</p>
+  <p><strong>起始资源</strong>：资金8000亿 / 声望52 / 国内支持65</p>
+  <p><strong>专属行动</strong>：科技自立攻关、人民币国际化推进、货币互换网络</p>
+</div>
+
+<!-- 场景5 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-CY-05</span>
+    <span class="scenario-card-name">网络空间安全攻防</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span><span class="tag tag-amber">威胁4</span></span>
+    <span>类型：网络空间</span>
+    <span>域：网络</span>
+    <span>轮数：5</span>
+  </div>
+  <p><strong>背景</strong>：中国关键信息基础设施遭受大规模高级持续性威胁攻击，多个政府机构和能源系统被入侵。攻击溯源指向某大国情报机构支持的黑客组织。</p>
+  <p><strong>起始资源</strong>：资金1200亿 / 声望56 / 国内支持74 / 声望类型：不适用</p>
+  <p><strong>专属行动</strong>：网络反击预案、网络空间动员、蜜罐诱捕部署</p>
+  <p><strong>力量配置</strong>：网络空间(92)、信息支援(82)、军事航天(78)、武警(78)</p>
+</div>
+
+<!-- 场景6 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-HW-06</span>
+    <span class="scenario-card-name">混合战争综合应对</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span><span class="tag tag-red">威胁5</span></span>
+    <span>类型：混合战争</span>
+    <span>域：信息</span>
+    <span>轮数：6</span>
+  </div>
+  <p><strong>背景</strong>：针对中国的混合战争态势升级：网络攻击、舆论操纵、经济胁迫、代理人骚扰同时展开。多域威胁交织，考验综合应对能力。</p>
+  <p><strong>起始资源</strong>：资金4500亿 / 声望54 / 国内支持66 / 声望类型：不适用</p>
+  <p><strong>专属行动</strong>：反间谍专项行动、社会韧性建设、混合威胁归因</p>
+</div>
+
+<!-- 场景7-8 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-ME-07</span>
+    <span class="scenario-card-name">中东局势与能源安全</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span><span class="tag tag-blue">威胁3</span></span>
+    <span>类型：能源安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：中东爆发新一轮地区冲突，国际油价暴涨。中国在中东的能源进口和侨民安全面临威胁。</p>
+  <p><strong>起始资源</strong>：资金3000亿 / 声望62 / 国内支持60</p>
+  <p><strong>专属行动</strong>：侨民撤离行动、能源储备补充、中东斡旋调停</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-HZ-08</span>
+    <span class="scenario-card-name">霍尔木兹海峡能源通道</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span><span class="tag tag-amber">威胁4</span></span>
+    <span>类型：战略通道</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：霍尔木兹海峡局势骤然紧张，某大国在海峡大规模军事集结。中国40%原油进口经此通道，能源生命线面临严重威胁。</p>
+  <p><strong>起始资源</strong>：资金4000亿 / 声望58 / 国内支持63</p>
+  <p><strong>专属行动</strong>：护航编队部署、替代能源通道、多国海军协调</p>
+</div>
+
+<!-- 场景9-14 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-IP-13</span>
+    <span class="scenario-card-name">印太战略围堵与反制</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：地缘战略</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：某大国全面推进"印太战略"，强化奥库斯联盟、四方安全对话等联盟机制，构建对华战略包围圈。</p>
+  <p><strong>起始资源</strong>：资金2500亿 / 声望64 / 国内支持67</p>
+  <p><strong>专属行动</strong>：战略突围外交、区域全面经济伙伴关系深化利用、分化对方联盟</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-RE-14</span>
+    <span class="scenario-card-name">关键矿产供应链博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：资源博弈</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：某大国推动关键矿产供应链"去中国化"，联合盟友建立替代供应体系。中国稀土优势面临挑战。</p>
+  <p><strong>起始资源</strong>：资金3500亿 / 声望57 / 国内支持69</p>
+  <p><strong>专属行动</strong>：战略矿产储备、稀土下游深加工、资源合作伙伴</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-SP-15</span>
+    <span class="scenario-card-name">太空域安全与轨道博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span>类型：太空安全</span>
+    <span>域：太空</span>
+  </div>
+  <p><strong>背景</strong>：某大国加速太空军事化部署，反卫星武器试验升级。中国太空资产面临威胁，轨道资源和太空交通管理权争夺白热化。</p>
+  <p><strong>起始资源</strong>：资金2800亿 / 声望59 / 国内支持64</p>
+  <p><strong>专属行动</strong>：反卫星威慑部署、卫星星座扩容、太空碎片清除</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-AI-17</span>
+    <span class="scenario-card-name">人工智能与前沿科技军备竞赛</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：科技博弈</span>
+    <span>域：网络</span>
+  </div>
+  <p><strong>背景</strong>：人工智能技术成为大国竞争核心领域。某大国实施芯片封锁遏制中国人工智能发展，同时加速人工智能军事化应用。</p>
+  <p><strong>起始资源</strong>：资金6000亿 / 声望53 / 国内支持71</p>
+  <p><strong>专属行动</strong>：芯片自主攻关、全球人才招募、人工智能军事化</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-FW-19</span>
+    <span class="scenario-card-name">金融制裁与去美元化</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：金融安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：某大国威胁将中国排除出环球银行金融电信系统，实施金融"核弹"级制裁。中国加速人民币国际化和跨境支付系统建设。</p>
+  <p><strong>起始资源</strong>：资金10000亿 / 声望56 / 国内支持68</p>
+  <p><strong>专属行动</strong>：跨境支付系统建设、黄金储备扩充、双边本币结算</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-AR-21</span>
+    <span class="scenario-card-name">北极航道与极地博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：极地博弈</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：北极冰盖加速消融，北方海航道通航期延长。某大国联合北约强化北极军事存在，中国在"近北极国家"权益面临挑战。</p>
+  <p><strong>起始资源</strong>：资金1800亿 / 声望63 / 国内支持58</p>
+  <p><strong>专属行动</strong>：极地科考研究、北方航道开发、破冰船队建设</p>
+</div>
+
+<!-- 场景16-20 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-DY-16</span>
+    <span class="scenario-card-name">钓鱼岛方向维权</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：核心利益维护</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：日方在钓鱼岛海域频繁挑衅，强化实际控制企图。中国海空力量常态化巡航维权。</p>
+  <p><strong>起始资源</strong>：资金2800亿 / 声望57 / 国内支持75</p>
+  <p><strong>专属行动</strong>：海空联合巡航、海洋执法立法、联合维权演训</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-KP-17</span>
+    <span class="scenario-card-name">朝鲜半岛局势管控</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span>类型：核扩散管控</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：朝鲜核武器和导弹技术持续发展，某大国在半岛加强军事存在。中国在核不扩散和地区稳定之间面临挑战。</p>
+  <p><strong>起始资源</strong>：资金3500亿 / 声望60 / 国内支持68</p>
+  <p><strong>专属行动</strong>：六方会谈斡旋、制裁决议调整、应急准备部署</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-MM-18</span>
+    <span class="scenario-card-name">缅甸局势与边境安全</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：边境安全</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：缅甸内战持续，边境地区安全形势恶化，难民和跨境犯罪威胁中国西南边境安全。</p>
+  <p><strong>起始资源</strong>：资金1500亿 / 声望58 / 国内支持65</p>
+  <p><strong>专属行动</strong>：边境封控加强、缅甸和平斡旋、人道主义援助</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-AF-19</span>
+    <span class="scenario-card-name">阿富汗重建与安全</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：反恐安全</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：阿富汗塔利班执政后经济困难，恐怖组织在阿巴边境活动。中国通过上合组织和双边渠道维护西部安全。</p>
+  <p><strong>起始资源</strong>：资金1200亿 / 声望62 / 国内支持60</p>
+  <p><strong>专属行动</strong>：重建援助计划、反恐安全合作、邻国协调机制</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-HA-20</span>
+    <span class="scenario-card-name">非洲之角安全博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：海外利益保护</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：非洲之角战略位置重要，多个大国在此竞争。中国在吉布提保障基地面临安全挑战。</p>
+  <p><strong>起始资源</strong>：资金1800亿 / 声望63 / 国内支持58</p>
+  <p><strong>专属行动</strong>：保障基地扩建、地区冲突调停、发展援助合作</p>
+</div>
+
+<!-- 场景21-30 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-VZ-21</span>
+    <span class="scenario-card-name">委内瑞拉危机与拉美博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：地缘博弈</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：委内瑞拉政治经济危机持续，某大国加强在拉美影响力。中国需要在拉美维护能源利益和战略伙伴关系。</p>
+  <p><strong>起始资源</strong>：资金1000亿 / 声望60 / 国内支持55</p>
+  <p><strong>专属行动</strong>：外交支持协调、能源合作深化、三方合作机制</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-BS-22</span>
+    <span class="scenario-card-name">生物安全事件应对</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span>类型：生物安全</span>
+    <span>域：网络</span>
+  </div>
+  <p><strong>背景</strong>：新型传染病暴发，疑似与某大国生物实验室相关。生物安全威胁人民生命健康和经济社会发展。</p>
+  <p><strong>起始资源</strong>：资金5000亿 / 声望56 / 国内支持70 / 声望类型：不适用</p>
+  <p><strong>专属行动</strong>：应急响应启动、病毒溯源调查、疫苗研发加速</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-NP-23</span>
+    <span class="scenario-card-name">核扩散与核安全管控</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span>类型：核安全</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：朝鲜核武库持续扩大，伊朗接近核门槛，核扩散风险加剧。中国需要维护核不扩散体系同时保障自身核威慑。</p>
+  <p><strong>起始资源</strong>：资金2000亿 / 声望64 / 国内支持72</p>
+  <p><strong>专属行动</strong>：不扩散外交推进、核威慑态势调整、军控谈判</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-DS2-24</span>
+    <span class="scenario-card-name">深海争端与海底安全</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：海洋安全</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：深海资源争夺加剧，某大国加强海底军事部署。海底电缆和深海科研设施安全面临威胁。</p>
+  <p><strong>起始资源</strong>：资金2500亿 / 声望59 / 国内支持62</p>
+  <p><strong>专属行动</strong>：深海勘探开发、海底监测部署、深海设施防护</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-CS-25</span>
+    <span class="scenario-card-name">气候安全与能源转型</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：气候安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：气候变化加剧极端天气和资源争夺，某大国以气候议题施压。中国推进双碳目标同时维护发展权。</p>
+  <p><strong>起始资源</strong>：资金4000亿 / 声望65 / 国内支持68</p>
+  <p><strong>专属行动</strong>：碳减排技术突破、新能源体系建设、气候合作</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-FS-26</span>
+    <span class="scenario-card-name">粮食安全与农业博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：粮食安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：全球粮食价格波动，地缘冲突影响粮食供应链。中国需要确保14亿人粮食安全和种业自主。</p>
+  <p><strong>起始资源</strong>：资金2000亿 / 声望60 / 国内支持70</p>
+  <p><strong>专属行动</strong>：战略粮食储备、农业科技攻关、进口多元化</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-SC-27</span>
+    <span class="scenario-card-name">供应链断链危机应对</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：供应链安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：某大国推进供应链去中国化，关键零部件和原材料断链风险加剧。中国需要构建韧性供应链体系。</p>
+  <p><strong>起始资源</strong>：资金3500亿 / 声望58 / 国内支持66</p>
+  <p><strong>专属行动</strong>：产业链回流、供应多元化、战略物资储备</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-CW-28</span>
+    <span class="scenario-card-name">认知域作战与舆论博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span>类型：认知域作战</span>
+    <span>域：信息</span>
+  </div>
+  <p><strong>背景</strong>：某大国利用媒体和社交平台对中国发动认知域作战，试图影响民众认知和国际舆论。信息防线面临严峻挑战。</p>
+  <p><strong>起始资源</strong>：资金1800亿 / 声望55 / 国内支持67 / 声望类型：不适用</p>
+  <p><strong>专属行动</strong>：认知防御反击、国际叙事塑造、平台治理管控</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-NE-29</span>
+    <span class="scenario-card-name">北约东扩与欧亚安全</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：地缘战略</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：北约持续东扩并试图介入亚太事务，某大国推动亚洲版北约。中国需要通过上合组织和伙伴关系网络反制。</p>
+  <p><strong>起始资源</strong>：资金2000亿 / 声望62 / 国内支持64</p>
+  <p><strong>专属行动</strong>：反制外交推进、伙伴关系深化、上合组织强化</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-ECS-30</span>
+    <span class="scenario-card-name">东海防空识别区博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：空防安全</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：某大国和日本军机频繁在中国东海防空识别区活动，空防安全压力增大。需要有效管控空中对峙风险。</p>
+  <p><strong>起始资源</strong>：资金2200亿 / 声望58 / 国内支持71</p>
+  <p><strong>专属行动</strong>：防空识别区执法、空中拦截管控、联合防空演训</p>
+</div>
+
+<!-- 场景31-38 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-SM-31</span>
+    <span class="scenario-card-name">马六甲海峡安全困境</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：能源通道安全</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：某大国加强马六甲海峡军事存在，与新加坡、印尼举行联合巡逻演习。中国80%能源进口途经此海峡，一旦被封锁将面临严重能源危机。</p>
+  <p><strong>起始资源</strong>：资金3800亿 / 声望60 / 国内支持68</p>
+  <p><strong>专属行动</strong>：海上护航编队部署、替代通道建设、海峡外交协调</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-QT-32</span>
+    <span class="scenario-card-name">量子科技争霸战</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-red">难度5</span></span>
+    <span>类型：前沿科技</span>
+    <span>域：信息</span>
+  </div>
+  <p><strong>背景</strong>：某大国投入巨资加速量子计算和量子通信研发，试图在密码破解和安全通信领域建立绝对优势。中国量子卫星和量子计算处于第一梯队。</p>
+  <p><strong>起始资源</strong>：资金2800亿 / 声望65 / 国内支持75 / 声望类型：科技竞争</p>
+  <p><strong>专属行动</strong>：量子技术攻关、量子人才争夺、量子标准制定</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-WS-33</span>
+    <span class="scenario-card-name">跨境水资源博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：资源安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：上游国家加速在跨境河流上修建水坝，影响中国西南地区用水安全。水资源正成为新的地缘博弈工具。</p>
+  <p><strong>起始资源</strong>：资金1500亿 / 声望52 / 国内支持70</p>
+  <p><strong>专属行动</strong>：水利设施调控、跨境水权条约、水资源调配</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-PSR-34</span>
+    <span class="scenario-card-name">冰上丝绸之路建设</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：极地战略</span>
+    <span>域：外交</span>
+  </div>
+  <p><strong>背景</strong>：北极冰融加速，北方海航道通航窗口延长。某大国和俄罗斯争夺航道控制权，中国提出冰上丝绸之路倡议。</p>
+  <p><strong>起始资源</strong>：资金3200亿 / 声望58 / 国内支持62</p>
+  <p><strong>专属行动</strong>：航道开发规划、港口合作建设、极地科研合作</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-MM-35</span>
+    <span class="scenario-card-name">海上灰色地带对峙</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：灰色地带</span>
+    <span>域：军事</span>
+  </div>
+  <p><strong>背景</strong>：某大国在南海部署海上巡逻力量，以渔船和海岸警卫队为前沿进行灰色地带施压。中国需要在军事升级与权益维护之间寻找平衡。</p>
+  <p><strong>起始资源</strong>：资金1800亿 / 声望56 / 国内支持73</p>
+  <p><strong>专属行动</strong>：海警执法对峙、渔业维权行动、舆论压力塑造</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-SD-36</span>
+    <span class="scenario-card-name">太空碎片碰撞危机</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：太空安全</span>
+    <span>域：太空</span>
+  </div>
+  <p><strong>背景</strong>：某大国秘密进行反卫星试验产生大量碎片，威胁中国在轨卫星安全运行。近地轨道资源争夺加剧。</p>
+  <p><strong>起始资源</strong>：资金2000亿 / 声望54 / 国内支持65 / 声望类型：科技竞争</p>
+  <p><strong>专属行动</strong>：碎片追踪系统、卫星轨道机动、碎片清理行动</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-BD-37</span>
+    <span class="scenario-card-name">基因数据安全攻防</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-amber">难度4</span></span>
+    <span>类型：生物数据安全</span>
+    <span>域：网络</span>
+  </div>
+  <p><strong>背景</strong>：某跨国公司以科研合作为名大量收集中国人群基因数据，境外情报机构利用基因数据研发生物特征识别系统。中国基因数据安全面临严峻挑战。</p>
+  <p><strong>起始资源</strong>：资金1600亿 / 声望55 / 国内支持72 / 声望类型：科技竞争</p>
+  <p><strong>专属行动</strong>：基因数据监管、国产测序平台、数据安全反制</p>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-ET-38</span>
+    <span class="scenario-card-name">能源转型博弈</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：能源安全</span>
+    <span>域：经济</span>
+  </div>
+  <p><strong>背景</strong>：全球能源转型加速，某大国通过碳关税和新能源技术壁垒重塑能源格局。中国需要同时保障传统能源安全和新能源技术自主。</p>
+  <p><strong>起始资源</strong>：资金4000亿 / 声望60 / 国内支持70</p>
+  <p><strong>专属行动</strong>：可再生能源加速、核电优先发展、智能电网建设</p>
+</div>
+
+<!-- 数字主权场景 -->
+<div class="scenario-card">
+  <div class="scenario-card-header">
+    <span class="scenario-card-code">NS-2026-DS-37</span>
+    <span class="scenario-card-name">数字主权与数据安全</span>
+  </div>
+  <div class="scenario-card-meta">
+    <span><span class="tag tag-blue">难度3</span></span>
+    <span>类型：数字主权</span>
+    <span>域：网络</span>
+  </div>
+  <p><strong>背景</strong>：数据跨境流动规则之争白热化，某大国试图主导全球数字治理框架。中国数字主权和数据安全面临系统性挑战。</p>
+  <p><strong>起始资源</strong>：资金2200亿 / 声望61 / 国内支持72</p>
+  <p><strong>专属行动</strong>：数据跨境监管、国产平台建设、数据安全标准</p>
+</div>
+
+<!-- ==================== 第十二章 ==================== -->
+<h1 class="chapter-title">第十二章　附录</h1>
+
+<h2 class="section-title">12.1　术语表</h2>
+
+<div class="glossary-item">
+  <span class="glossary-term">百分骰</span> — 生成1-100随机整数的骰子系统，用于推演行动裁决。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">行动点</span> — 每轮5点，用于执行战略行动。不同行动消耗不同行动点。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">推演复盘报告</span> — 推演结束后自动生成的详细分析报告。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">防御准备状态</span> — 1-5级威胁等级体系，1为最高战备。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">升级度</span> — 对抗烈度指标，1-5级。影响智能对手侵略性和推演评分。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">大成功</span> — 骰值≤成功率×25%时触发，效果×1.5。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">声望类型</span> — 场景属性，决定战争/和平行动的声望变化倍率。包括维护主权/侵略行动/科技竞争/不适用四种。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">六域</span> — 军事、经济、网络、外交、信息、国内六个战略域。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">推演链</span> — 将多个相关场景串联的跨域推演线，模拟连锁反应。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">情报融合</span> — 多源情报关联分析，识别跨域威胁模式。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">功能区</span> — 与推演引擎联动的支撑系统，提供推演前/中/后加成。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">联动加成</span> — 跨域联合行动成功时，各参与域获得的效果加成。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">科技研发收益</span> — 科技类行动执行后下轮产生的资金收益。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">预备队</span> — 每场推演可使用2次的失败挽救机会。
+</div>
+<div class="glossary-item">
+  <span class="glossary-term">导调方</span> — 智能系统自动担任的第三方角色，负责态势推送和裁决。
+</div>
+
+<h2 class="section-title">12.2　规则速查表</h2>
+
+<h3 class="subsection-title">12.2.1　骰子判定速查</h3>
+<table>
+  <tr><th>骰值范围</th><th>结果</th><th>效果倍率</th></tr>
+  <tr><td>1 ~ 成功率×0.25</td><td>大成功</td><td>×1.5</td></tr>
+  <tr><td>成功率×0.25+1 ~ 成功率</td><td>成功</td><td>×1.0</td></tr>
+  <tr><td>成功率+1 ~ 100</td><td>失败</td><td>×0.3</td></tr>
+</table>
+
+<h3 class="subsection-title">12.2.2　修正系数速查</h3>
+<table>
+  <tr><th>修正项</th><th>公式</th><th>系数</th></tr>
+  <tr><td>力量修正</td><td>(平均战备度-50)×系数</td><td>0.3</td></tr>
+  <tr><td>声望修正</td><td>(国际声望-50)×系数</td><td>0.2</td></tr>
+  <tr><td>国内支持修正</td><td>(国内支持-50)×系数</td><td>0.1</td></tr>
+  <tr><td>经济基础收益</td><td>当前资金×系数</td><td>0.03</td></tr>
+  <tr><td>资金评分下限</td><td>基础分+比例分×80</td><td>20分下限</td></tr>
+</table>
+
+<h3 class="subsection-title">12.2.3　声望规则速查</h3>
+<table>
+  <tr><th>场景类型</th><th>战争惩罚</th><th>和平增长</th></tr>
+  <tr><td>维护主权</td><td>×1.5</td><td>×1.0</td></tr>
+  <tr><td>侵略行动</td><td>×0.5</td><td>×1.0</td></tr>
+  <tr><td>科技竞争</td><td>×1.0</td><td>×1.0</td></tr>
+  <tr><td>不适用</td><td>×0</td><td>×0</td></tr>
+</table>
+
+<h3 class="subsection-title">12.2.4　评分权重速查</h3>
+<table>
+  <tr><th>指标</th><th>权重</th></tr>
+  <tr><td>六域状态</td><td>35%</td></tr>
+  <tr><td>国际声望</td><td>20%</td></tr>
+  <tr><td>国内支持</td><td>20%</td></tr>
+  <tr><td>资金状态</td><td>10%</td></tr>
+  <tr><td>升级控制</td><td>15%</td></tr>
+</table>
+
+<h2 class="section-title">12.3　评分公式汇总</h2>
+
+<div class="code-block">
+【最终成功率】
+最终成功率 = 基础成功率
+            + (军事平均战备-50) × 0.3      [军事域行动]
+            + (国际声望-50) × 0.2
+            + (国内支持-50) × 0.1
+            + Σ(情报修正)
+            + Σ(功能区加成)
+            (限制: 5 ≤ 最终成功率 ≤ 100)
+
+【大成功阈值】
+大成功阈值 = 最终成功率 × 0.25
+
+【声望变化】
+战争行动: 声望变化 = 声望效果 × 战争惩罚倍率[场景类型]
+和平行动: 声望变化 = 声望效果 × 和平增长倍率[场景类型] (下轮结算)
+
+【资金评分】
+资金评分 = 20 + 取大值(0, 剩余资金/起始资金) × 80
+(限制: 0 ≤ 资金评分 ≤ 100)
+
+【升级控制评分】
+升级控制评分 = (5 - 最终升级度) × 20
+
+【综合评分】
+综合评分 = 六域均值 × 0.35
+           + 声望 × 0.20
+           + 国内支持 × 0.20
+           + 资金评分 × 0.10
+           + 升级控制 × 0.15
+</div>
+
+<h2 class="section-title">12.4　战略行动完整清单</h2>
+
+<h3 class="subsection-title">12.4.1　通用行动（六域各5个，共30个）</h3>
+<table>
+  <tr><th>域</th><th>行动名称</th><th>行动点</th><th>资金</th><th>成功率</th><th>升级</th></tr>
+  <tr><td rowspan="5">军事</td><td>前沿军事威慑部署</td><td>3</td><td>800</td><td>62</td><td>+2</td></tr>
+  <tr><td>联合军事演习</td><td>2</td><td>400</td><td>72</td><td>+1</td></tr>
+  <tr><td>提升战备等级</td><td>2</td><td>200</td><td>80</td><td>+1</td></tr>
+  <tr><td>精确军事打击</td><td>5</td><td>1500</td><td>45</td><td>+3</td></tr>
+  <tr><td>防御态势调整</td><td>2</td><td>300</td><td>85</td><td>0</td></tr>
+  <tr><td rowspan="5">经济</td><td>经济制裁反制</td><td>3</td><td>500</td><td>65</td><td>+1</td></tr>
+  <tr><td>贸易谈判与协议</td><td>2</td><td>100</td><td>75</td><td>-1</td></tr>
+  <tr><td>供应链重构</td><td>3</td><td>1000</td><td>78</td><td>0</td></tr>
+  <tr><td>金融反制措施</td><td>2</td><td>300</td><td>70</td><td>0</td></tr>
+  <tr><td>经济援助与合作</td><td>2</td><td>600</td><td>76</td><td>-1</td></tr>
+  <tr><td rowspan="4">网络</td><td>网络防御加固</td><td>2</td><td>150</td><td>88</td><td>0</td></tr>
+  <tr><td>网络反制攻击</td><td>3</td><td>250</td><td>55</td><td>+2</td></tr>
+  <tr><td>网络情报搜集</td><td>2</td><td>100</td><td>82</td><td>0</td></tr>
+  <tr><td>攻击溯源与披露</td><td>1</td><td>50</td><td>74</td><td>0</td></tr>
+  <tr><td rowspan="5">外交</td><td>外交斡旋谈判</td><td>2</td><td>50</td><td>78</td><td>-1</td></tr>
+  <tr><td>多边外交协调</td><td>2</td><td>80</td><td>72</td><td>-1</td></tr>
+  <tr><td>联盟构建巩固</td><td>3</td><td>200</td><td>75</td><td>0</td></tr>
+  <tr><td>强硬外交表态</td><td>1</td><td>10</td><td>68</td><td>+1</td></tr>
+  <tr><td>高级别峰会</td><td>3</td><td>100</td><td>65</td><td>-2</td></tr>
+  <tr><td rowspan="3">信息</td><td>舆论反击</td><td>2</td><td>80</td><td>76</td><td>0</td></tr>
+  <tr><td>权威信息发布</td><td>1</td><td>30</td><td>84</td><td>0</td></tr>
+  <tr><td>认知域作战</td><td>3</td><td>200</td><td>58</td><td>+1</td></tr>
+  <tr><td rowspan="3">国内</td><td>国防动员</td><td>3</td><td>300</td><td>78</td><td>+1</td></tr>
+  <tr><td>经济调控措施</td><td>2</td><td>500</td><td>85</td><td>0</td></tr>
+  <tr><td>民意引导团结</td><td>1</td><td>20</td><td>88</td><td>0</td></tr>
+</table>
+
+<h3 class="subsection-title">12.4.2　场景专属行动（每个场景3个，共114个）</h3>
+<p>38个场景各有3个专属行动，共计114个。专属行动的行动点消耗、资金消耗、成功率和效果均根据场景特性定制。完整清单请参阅系统内"规则手册"页面。</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">手册版本信息</div>
+  <p>本手册对应平台版本 V12.1，编写日期2026年7月。如平台更新后手册内容与实际系统存在差异，以系统内实际表现为准。</p>
+</div>
+
+<p style="text-align:center; margin-top:60px; color:#999; font-size:10pt;">— 手册结束 —</p>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "nss-wgs-server",
+  "version": "1.0.0",
+  "description": "国家安全战略兵棋推演平台 — 跨区域联机对弈WebSocket服务器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.1"
+  }
+}

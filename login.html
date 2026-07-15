@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国家安全战略兵棋推演平台 | 身份验证</title>
+<style>
+:root{
+  --bg-void:#0a1628; --bg-deep:#0d1f3a; --bg-panel:rgba(13,31,58,.88);
+  --bg-glass:rgba(15,30,55,.65);
+  --border:rgba(0,180,216,.15); --border-mid:rgba(0,180,216,.35); --border-hi:rgba(0,180,216,.60);
+  --cyan:#00b4d8; --cyan-bright:#48cae4; --cyan-dim:#0077b6;
+  --red:#ff4757; --amber:#ffa502; --green:#2ed573; --purple:#a29bfe;
+  --txt-0:#d6e4f5; --txt-1:#7a9cc6; --txt-2:#4a6b8a;
+  --glow-cyan:0 0 24px rgba(0,180,216,.25);
+  --glow-cyan-sm:0 0 12px rgba(0,180,216,.18);
+  --radius:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;
+  background:var(--bg-void);color:var(--txt-0);
+  -webkit-font-smoothing:antialiased;
+  display:flex;
+}
+
+/* ============ 左侧动画展示区 ============ */
+.visual-panel{
+  width:56%;height:100vh;position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 30% 40%,rgba(0,180,216,.18),transparent 60%),
+    radial-gradient(ellipse at 70% 60%,rgba(162,155,254,.06),transparent 50%),
+    linear-gradient(180deg,#0d1f3a,#0a1628);
+  flex-shrink:0;
+}
+/* 网格背景 */
+.vp-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,180,216,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,180,216,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%);
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%);
+}
+/* 扫描线 */
+.vp-scanline{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,180,216,.01) 3px,rgba(0,180,216,.01) 6px);
+}
+/* 雷达扫描 */
+.vp-radar{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:520px;height:520px;border-radius:50%;
+  border:1px solid rgba(0,180,216,.08);
+  pointer-events:none;
+}
+.vp-radar::before,.vp-radar::after{
+  content:'';position:absolute;border-radius:50%;
+  border:1px solid rgba(0,180,216,.06);
+}
+.vp-radar::before{inset:60px}
+.vp-radar::after{inset:140px}
+.radar-sweep{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,
+    transparent 0deg,
+    rgba(0,180,216,.0) 300deg,
+    rgba(0,180,216,.04) 340deg,
+    rgba(0,180,216,.12) 358deg,
+    rgba(0,180,216,.0) 360deg
+  );
+  animation:radarSpin 6s linear infinite;
+}
+@keyframes radarSpin{to{transform:rotate(360deg)}}
+
+/* ============ 全息指挥控制台 ============ */
+.vp-console{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:500px;z-index:3;pointer-events:none;
+}
+.console-frame{
+  position:relative;
+  background:linear-gradient(135deg,rgba(13,31,58,.94),rgba(10,22,40,.96));
+  border:1px solid rgba(0,180,216,.28);
+  border-radius:12px;overflow:hidden;
+  box-shadow:0 0 40px rgba(0,180,216,.10),0 8px 32px rgba(0,0,0,.45),inset 0 0 20px rgba(0,180,216,.03);
+}
+.console-frame::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 8%,var(--cyan) 50%,transparent 92%);opacity:.55;
+}
+.console-frame::after{
+  content:'';position:absolute;inset:-1px;border-radius:12px;
+  border:1px solid rgba(0,180,216,.12);
+  animation:consoleGlow 3s ease-in-out infinite;pointer-events:none;
+}
+@keyframes consoleGlow{
+  0%,100%{box-shadow:0 0 20px rgba(0,180,216,.06)}
+  50%{box-shadow:0 0 38px rgba(0,180,216,.16)}
+}
+/* 控制台头部 */
+.console-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 16px;
+  background:linear-gradient(180deg,rgba(0,180,216,.07),transparent);
+  border-bottom:1px solid rgba(0,180,216,.10);
+}
+.ch-title{
+  font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:2px;
+  display:flex;align-items:center;gap:8px;
+}
+.ch-icon{font-size:13px;text-shadow:0 0 8px var(--cyan);animation:iconPulse 2.5s ease-in-out infinite}
+@keyframes iconPulse{0%,100%{opacity:1}50%{opacity:.5}}
+.ch-live{
+  font-size:9px;font-family:'Consolas',monospace;
+  display:flex;align-items:center;gap:5px;color:var(--green);letter-spacing:1.5px;
+}
+.ch-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 6px var(--green);animation:blink 2s infinite;
+}
+/* 控制台屏幕 */
+.console-screen{
+  position:relative;padding:14px 16px;
+  display:grid;grid-template-columns:168px 1fr;gap:14px;min-height:232px;
+}
+/* 扫描线 */
+.screen-scanline{
+  position:absolute;left:0;right:0;top:0;height:2px;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(0,180,216,.35),transparent);
+  animation:screenScan 4s linear infinite;
+}
+@keyframes screenScan{
+  0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}
+}
+/* 屏幕暗背景纹理 */
+.console-screen::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,180,216,.008) 2px,rgba(0,180,216,.008) 4px);
+}
+/* 迷你雷达 */
+.screen-radar{position:relative}
+.screen-radar svg{width:100%;height:auto;display:block}
+.radar-sweep-group{transform-origin:100px 100px;animation:radarSpin 4s linear infinite}
+.radar-blip{animation:blipPulse 2s ease-in-out infinite}
+@keyframes blipPulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* 数据面板 */
+.screen-data{display:flex;flex-direction:column;gap:7px}
+.data-row{
+  display:flex;align-items:baseline;gap:8px;
+  padding-bottom:6px;border-bottom:1px solid rgba(0,180,216,.08);
+}
+.dr-label{font-size:9px;color:var(--txt-2);letter-spacing:1px;font-family:'Consolas',monospace}
+.defcon-val{
+  font-size:24px;font-weight:800;color:var(--amber);line-height:1;
+  text-shadow:0 0 14px rgba(255,165,2,.4);animation:defconPulse 2s ease-in-out infinite;
+}
+@keyframes defconPulse{0%,100%{text-shadow:0 0 14px rgba(255,165,2,.4)}50%{text-shadow:0 0 22px rgba(255,165,2,.65)}}
+.dr-tag{
+  font-size:8px;padding:2px 6px;border-radius:3px;
+  background:rgba(255,165,2,.10);color:var(--amber);
+  letter-spacing:1px;font-family:'Consolas',monospace;
+}
+/* 域状态条 */
+.data-bar-group{display:flex;flex-direction:column;gap:5px}
+.dbg-item{display:flex;align-items:center;gap:7px}
+.dbg-name{font-size:9px;color:var(--txt-1);width:48px;flex-shrink:0;letter-spacing:.5px}
+.dbg-bar{flex:1;height:5px;background:rgba(0,180,216,.05);border-radius:2px;overflow:hidden;position:relative}
+.dbg-fill{height:100%;border-radius:2px;position:relative;transition:width .8s ease}
+.dbg-fill::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:5px;
+  background:rgba(255,255,255,.35);border-radius:0 2px 2px 0;
+}
+.dbg-val{font-size:9px;color:var(--txt-1);width:18px;text-align:right;font-family:'Consolas',monospace}
+/* 数据流 */
+.screen-stream{
+  grid-column:1/-1;border-top:1px solid rgba(0,180,216,.08);
+  padding-top:7px;margin-top:2px;
+  font-size:9px;font-family:'Consolas',monospace;line-height:1.7;letter-spacing:.5px;
+}
+.ss-entry{opacity:0;animation:termShow .5s ease forwards;white-space:nowrap;overflow:hidden}
+.ss-entry:nth-child(1){animation-delay:.5s}
+.ss-entry:nth-child(2){animation-delay:1.1s}
+.ss-entry:nth-child(3){animation-delay:1.7s}
+.ss-entry:nth-child(4){animation-delay:2.3s}
+.ss-entry:nth-child(5){animation-delay:2.9s}
+.ss-prompt{color:var(--green);margin-right:4px}
+.ss-warn-tag{color:var(--amber);margin-right:4px}
+.ss-cmd{color:var(--cyan);margin-right:4px}
+/* 屏幕角标 */
+.cb{position:absolute;width:12px;height:12px;pointer-events:none;z-index:3}
+.cb-tl{top:-1px;left:-1px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);border-top-left-radius:12px}
+.cb-tr{top:-1px;right:-1px;border-top:2px solid var(--cyan);border-right:2px solid var(--cyan);border-top-right-radius:12px}
+.cb-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--cyan);border-left:2px solid var(--cyan);border-bottom-left-radius:12px}
+.cb-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);border-bottom-right-radius:12px}
+/* 控制台底座光晕 */
+.console-base{
+  position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);
+  width:80%;height:12px;
+  background:radial-gradient(ellipse at center,rgba(0,180,216,.15),transparent 70%);
+  filter:blur(4px);animation:baseGlow 3s ease-in-out infinite;
+}
+@keyframes baseGlow{0%,100%{opacity:.5}50%{opacity:.8}}
+
+/* SVG 世界地图节点 */
+.vp-map{position:absolute;inset:0;pointer-events:none}
+.map-node{
+  fill:var(--cyan);
+  filter:drop-shadow(0 0 4px rgba(0,180,216,.7));
+}
+.map-node-pulse{
+  fill:none;stroke:var(--cyan);stroke-width:1;
+  animation:nodePulse 3s ease-out infinite;
+  transform-origin:center;
+}
+@keyframes nodePulse{
+  0%{r:3;opacity:.8;stroke-width:1.5}
+  100%{r:22;opacity:0;stroke-width:.5}
+}
+.map-line{
+  stroke:rgba(0,180,216,.15);stroke-width:1;fill:none;
+  stroke-dasharray:4 4;
+  animation:lineDash 3s linear infinite;
+}
+@keyframes lineDash{to{stroke-dashoffset:-16}}
+.map-line.active{
+  stroke:rgba(0,180,216,.5);
+  animation:lineFlow 2s linear infinite;
+}
+@keyframes lineFlow{
+  0%{stroke-dashoffset:0;opacity:.3}
+  50%{opacity:.8}
+  100%{stroke-dashoffset:-16;opacity:.3}
+}
+
+/* 浮动数据标签 */
+.vp-datalabel{
+  position:absolute;font-size:10px;font-family:'Consolas','Courier New',monospace;
+  color:rgba(0,180,216,.5);letter-spacing:.5px;pointer-events:none;
+  white-space:nowrap;
+}
+.vp-datalabel .dl-key{color:rgba(0,180,216,.20)}
+.vp-datalabel .dl-val{color:rgba(0,180,216,.7)}
+.vp-datalabel .dl-val.alert{color:var(--amber)}
+.vp-datalabel .dl-val.critical{color:var(--red)}
+
+/* 粒子流 */
+.vp-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.particle{
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 4px rgba(0,180,216,.7);
+  opacity:0;
+  animation:particleFloat 8s linear infinite;
+}
+@keyframes particleFloat{
+  0%{opacity:0;transform:translateY(0) translateX(0)}
+  10%{opacity:.8}
+  90%{opacity:.6}
+  100%{opacity:0;transform:translateY(-300px) translateX(40px)}
+}
+
+/* 六边形装饰 */
+.vp-hex{position:absolute;pointer-events:none;opacity:.08}
+.hex-spin{animation:hexRotate 20s linear infinite}
+@keyframes hexRotate{to{transform:rotate(360deg)}}
+
+/* 左侧顶部标题区 */
+.vp-header{
+  position:absolute;top:40px;left:48px;z-index:5;pointer-events:none;
+}
+.vp-header .vh-title{
+  font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:3px;
+  text-transform:uppercase;display:flex;align-items:center;gap:10px;
+}
+.vp-header .vh-title::before{
+  content:'';width:28px;height:2px;background:var(--cyan);box-shadow:var(--glow-cyan-sm);
+}
+.vp-header .vh-sub{
+  font-size:11px;color:var(--txt-2);letter-spacing:1.5px;margin-top:6px;
+  font-family:'Consolas',monospace;
+}
+
+/* 左侧底部系统状态 */
+.vp-footer{
+  position:absolute;bottom:32px;left:48px;right:48px;z-index:5;pointer-events:none;
+  display:flex;justify-content:space-between;align-items:flex-end;
+}
+.vp-status{
+  font-size:11px;font-family:'Consolas',monospace;color:var(--txt-2);letter-spacing:1px;
+  line-height:1.8;
+}
+.vp-status .vs-line{display:flex;align-items:center;gap:8px}
+.vp-status .vs-dot{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+}
+.vp-status .vs-dot.green{background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite}
+.vp-status .vs-dot.amber{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.vp-status .vs-label{color:var(--txt-1)}
+.vp-status .vs-val{color:var(--cyan)}
+
+/* 终端打字效果 */
+.vp-terminal{
+  position:absolute;bottom:100px;right:48px;z-index:5;pointer-events:none;
+  width:280px;font-size:10px;font-family:'Consolas',monospace;
+  color:rgba(0,180,216,.25);line-height:1.6;letter-spacing:.5px;
+  text-align:right;
+}
+.vp-terminal .term-line{
+  opacity:0;animation:termShow .5s ease forwards;
+}
+.vp-terminal .term-line:nth-child(1){animation-delay:.5s}
+.vp-terminal .term-line:nth-child(2){animation-delay:1.2s}
+.vp-terminal .term-line:nth-child(3){animation-delay:1.9s}
+.vp-terminal .term-line:nth-child(4){animation-delay:2.6s}
+.vp-terminal .term-line:nth-child(5){animation-delay:3.3s}
+@keyframes termShow{to{opacity:1}}
+.vp-terminal .term-prompt{color:var(--green)}
+.vp-terminal .term-warn{color:var(--amber)}
+
+/* 角标装饰 */
+.vp-corner{
+  position:absolute;width:60px;height:60px;pointer-events:none;opacity:.3;z-index:4;
+}
+.vp-corner.tl{top:20px;left:20px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+.vp-corner.bl{bottom:20px;left:20px;border-bottom:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+
+/* ============ 右侧登录区 ============ */
+.login-side{
+  width:44%;height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:10;
+  background:linear-gradient(135deg,rgba(18,38,70,.97),rgba(15,35,65,.95));
+  border-left:1px solid var(--border-mid);
+}
+.login-side::before{
+  content:'';position:absolute;top:0;left:0;width:1px;height:100%;
+  background:linear-gradient(180deg,transparent,var(--cyan),transparent);opacity:.3;
+}
+/* 右侧网格 */
+.login-side::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,180,216,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,180,216,.02) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+
+.login-container{
+  position:relative;z-index:2;width:400px;animation:fadeIn .8s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.logo-area{text-align:center;margin-bottom:28px}
+.logo-img-wrap{
+  display:flex;justify-content:center;align-items:center;
+  margin-bottom:10px;margin-top:20px;position:relative;
+  padding-right:40px;
+}
+.logo-img-wrap::before{
+  content:'';position:absolute;width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,180,216,.10),transparent 70%);
+  animation:logoGlow 3s ease-in-out infinite;
+}
+@keyframes logoGlow{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+.logo-img-wrap img{
+  height:112px;width:auto;position:relative;z-index:1;
+  filter:drop-shadow(0 0 14px rgba(0,180,216,.22));
+  border-radius:8px;
+}
+.logo-univ{
+  font-size:23px;font-weight:800;letter-spacing:4px;color:var(--txt-0);
+  margin-bottom:8px;text-shadow:0 0 20px rgba(0,180,216,.15);
+}
+.logo-divider{
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;
+}
+.logo-divider::before,.logo-divider::after{
+  content:'';width:36px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+}
+.logo-divider .ld-dot{
+  width:4px;height:4px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 6px var(--cyan);
+}
+.logo-title{
+  font-size:15px;font-weight:600;letter-spacing:2px;line-height:1.4;
+  color:var(--txt-1);
+}
+.logo-title .cyan{color:var(--cyan);text-shadow:0 0 10px rgba(0,180,216,.20)}
+.logo-sub{
+  font-size:10px;color:var(--txt-2);letter-spacing:2.5px;margin-top:7px;
+  font-family:'Consolas',monospace;
+}
+
+.login-card{
+  background:var(--bg-glass);border:1px solid var(--border-mid);
+  border-radius:14px;padding:34px 30px;backdrop-filter:blur(24px);
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 20px rgba(0,180,216,.06);
+}
+.login-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 10%,var(--cyan) 50%,transparent 90%);
+}
+.login-card::after{
+  content:'';position:absolute;top:0;left:0;width:60px;height:60px;
+  border-top:1px solid var(--cyan);border-left:1px solid var(--cyan);
+  border-top-left-radius:14px;opacity:.4;
+}
+
+.step-indicator{
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;
+}
+.step-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--txt-2);transition:all .3s;
+}
+.step-dot.active{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.step-line{
+  width:24px;height:1px;background:var(--txt-2);transition:all .3s;
+}
+.step-line.active{background:var(--cyan)}
+
+.form-group{margin-bottom:18px}
+.form-label{
+  font-size:11px;color:var(--txt-1);letter-spacing:1.5px;margin-bottom:7px;display:block;
+  text-transform:uppercase;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+}
+.form-label::before{
+  content:'';width:3px;height:3px;border-radius:50%;background:var(--cyan);box-shadow:0 0 4px var(--cyan);
+}
+.form-input{
+  width:100%;padding:13px 16px;font-size:14px;
+  background:rgba(8,20,40,.6);border:1px solid var(--border);
+  border-radius:8px;color:var(--txt-0);outline:none;
+  transition:all .25s;font-family:inherit;
+}
+.form-input:focus{
+  border-color:var(--cyan);
+  box-shadow:0 0 16px rgba(0,180,216,.15),inset 0 0 8px rgba(0,180,216,.03);
+  background:rgba(0,0,0,.5);
+}
+.form-input::placeholder{color:var(--txt-2)}
+
+.btn-primary{
+  width:100%;padding:14px;font-size:15px;font-weight:700;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan-dim));
+  color:#fff;border:none;border-radius:8px;cursor:pointer;
+  transition:all .25s;letter-spacing:1px;margin-top:8px;
+  position:relative;overflow:hidden;
+}
+.btn-primary::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  transition:left .5s;
+}
+.btn-primary:hover::before{left:100%}
+.btn-primary:hover{box-shadow:var(--glow-cyan);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.btn-secondary{
+  width:100%;padding:12px;font-size:14px;font-weight:600;
+  background:transparent;color:var(--cyan);border:1px solid var(--border-mid);
+  border-radius:8px;cursor:pointer;transition:all .25s;margin-top:8px;
+}
+.btn-secondary:hover{background:rgba(0,180,216,.08);box-shadow:0 0 12px rgba(0,180,216,.15)}
+
+.error-msg{
+  color:var(--red);font-size:13px;text-align:center;margin-top:12px;
+  min-height:20px;transition:all .3s;
+}
+.divider{
+  display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--txt-2);font-size:12px;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.footer-text{text-align:center;font-size:12px;color:var(--txt-2);margin-top:16px}
+.footer-text a{color:var(--cyan);text-decoration:none;transition:all .2s}
+.footer-text a:hover{text-shadow:0 0 8px var(--cyan)}
+
+/* 安全标识 */
+.security-badge{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:20px;font-size:10px;color:var(--txt-2);letter-spacing:1.5px;
+  font-family:'Consolas',monospace;
+}
+.security-badge .sb-icon{
+  width:14px;height:14px;border:1px solid var(--border-mid);border-radius:3px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:8px;
+  color:var(--green);
+}
+
+/* HUD 右上角 */
+.hud-tr{
+  position:fixed;top:28px;right:28px;z-index:20;pointer-events:none;
+  display:flex;align-items:center;gap:8px;font-size:10px;
+  color:var(--txt-2);font-family:'Consolas',monospace;letter-spacing:1px;
+}
+.hud-tr::before{content:'';width:20px;height:1px;background:rgba(0,180,216,.15)}
+.hud-tr::after{content:'';width:40px;height:1px;background:rgba(0,180,216,.08)}
+
+/* 响应式 */
+@media(max-width:900px){
+  .visual-panel{display:none}
+  .login-side{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 左侧动画展示区 ============ -->
+<div class="visual-panel">
+  <div class="vp-grid"></div>
+  <div class="vp-scanline"></div>
+  <div class="vp-corner tl"></div>
+  <div class="vp-corner bl"></div>
+
+  <!-- 全息指挥控制台 -->
+  <div class="vp-console">
+    <div class="console-frame">
+      <!-- 头部 -->
+      <div class="console-header">
+        <div class="ch-title"><span class="ch-icon">◈</span>STRATEGIC OPERATIONS CENTER</div>
+        <div class="ch-live"><span class="ch-dot"></span>LIVE</div>
+      </div>
+      <!-- 屏幕 -->
+      <div class="console-screen">
+        <div class="screen-scanline"></div>
+        <!-- 迷你雷达 -->
+        <div class="screen-radar">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(0,180,216,.14)" stroke-width="1"/>
+            <circle cx="100" cy="100" r="62" fill="none" stroke="rgba(0,180,216,.10)" stroke-width="1"/>
+            <circle cx="100" cy="100" r="32" fill="none" stroke="rgba(0,180,216,.07)" stroke-width="1"/>
+            <line x1="100" y1="8" x2="100" y2="192" stroke="rgba(0,180,216,.07)" stroke-width="1"/>
+            <line x1="8" y1="100" x2="192" y2="100" stroke="rgba(0,180,216,.07)" stroke-width="1"/>
+            <g class="radar-sweep-group">
+              <path d="M100,100 L100,8 A92,92 0 0,1 192,100 Z" fill="rgba(0,180,216,.05)"/>
+              <line x1="100" y1="100" x2="100" y2="8" stroke="rgba(0,180,216,.3)" stroke-width="1"/>
+            </g>
+            <circle class="radar-blip" cx="132" cy="68" r="2.5" fill="#ffa502" filter="drop-shadow(0 0 4px #ffa502)"/>
+            <circle class="radar-blip" cx="72" cy="128" r="2" fill="#ff4757" filter="drop-shadow(0 0 4px #ff4757)" style="animation-delay:.4s"/>
+            <circle class="radar-blip" cx="148" cy="138" r="2" fill="#00b4d8" filter="drop-shadow(0 0 4px #00b4d8)" style="animation-delay:.8s"/>
+            <circle class="radar-blip" cx="65" cy="62" r="1.5" fill="#a29bfe" opacity=".6" style="animation-delay:1.2s"/>
+            <circle cx="100" cy="100" r="3" fill="#00b4d8" filter="drop-shadow(0 0 6px #00b4d8)"/>
+          </svg>
+        </div>
+        <!-- 数据面板 -->
+        <div class="screen-data">
+          <div class="data-row">
+            <span class="dr-label">DEFCON</span>
+            <span class="defcon-val" id="consoleDefcon">3</span>
+            <span class="dr-tag">ELEVATED</span>
+          </div>
+          <div class="data-bar-group" id="consoleBars">
+            <div class="dbg-item"><span class="dbg-name">军事安全</span><div class="dbg-bar"><div class="dbg-fill" style="width:86%;background:#ff4757"></div></div><span class="dbg-val">86</span></div>
+            <div class="dbg-item"><span class="dbg-name">经济安全</span><div class="dbg-bar"><div class="dbg-fill" style="width:55%;background:#00b4d8"></div></div><span class="dbg-val">55</span></div>
+            <div class="dbg-item"><span class="dbg-name">网络空间</span><div class="dbg-bar"><div class="dbg-fill" style="width:88%;background:#ffa502"></div></div><span class="dbg-val">88</span></div>
+            <div class="dbg-item"><span class="dbg-name">外交战线</span><div class="dbg-bar"><div class="dbg-fill" style="width:40%;background:#2ed573"></div></div><span class="dbg-val">40</span></div>
+            <div class="dbg-item"><span class="dbg-name">信息舆论</span><div class="dbg-bar"><div class="dbg-fill" style="width:75%;background:#a29bfe"></div></div><span class="dbg-val">75</span></div>
+            <div class="dbg-item"><span class="dbg-name">太空安全</span><div class="dbg-bar"><div class="dbg-fill" style="width:60%;background:#00b4d8"></div></div><span class="dbg-val">60</span></div>
+          </div>
+        </div>
+        <!-- 数据流 -->
+        <div class="screen-stream">
+          <div class="ss-entry"><span class="ss-prompt">[SYS]</span>兵棋推演引擎已就绪</div>
+          <div class="ss-entry"><span class="ss-prompt">[NET]</span>卫星通信链路正常</div>
+          <div class="ss-entry"><span class="ss-warn-tag">[WRN]</span>检测到 3 个潜在威胁节点</div>
+          <div class="ss-entry"><span class="ss-cmd">[CMD]</span>等待身份验证授权...</div>
+          <div class="ss-entry"><span class="ss-prompt">[SYS]</span>请完成安全登录以进入系统</div>
+        </div>
+      </div>
+      <!-- 角标 -->
+      <div class="cb cb-tl"></div><div class="cb cb-tr"></div>
+      <div class="cb cb-bl"></div><div class="cb cb-br"></div>
+      <div class="console-base"></div>
+    </div>
+  </div>
+
+  <!-- 六边形装饰 -->
+  <svg class="vp-hex hex-spin" style="top:8%;right:10%" width="120" height="120" viewBox="0 0 100 100">
+    <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#00b4d8" stroke-width="1"/>
+    <polygon points="50,20 75,35 75,65 50,80 25,65 25,35" fill="none" stroke="#00b4d8" stroke-width=".5"/>
+  </svg>
+  <svg class="vp-hex" style="bottom:15%;left:8%;opacity:.05" width="80" height="80" viewBox="0 0 100 100">
+    <polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#a29bfe" stroke-width="1"/>
+  </svg>
+
+  <!-- 世界地图节点 SVG -->
+  <svg class="vp-map" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+    <!-- 连接线 -->
+    <line class="map-line active" x1="500" y1="350" x2="200" y2="200"/>
+    <line class="map-line active" x1="500" y1="350" x2="800" y2="180"/>
+    <line class="map-line" x1="500" y1="350" x2="350" y2="520"/>
+    <line class="map-line" x1="500" y1="350" x2="720" y2="500"/>
+    <line class="map-line active" x1="200" y1="200" x2="800" y2="180"/>
+    <line class="map-line" x1="350" y1="520" x2="720" y2="500"/>
+    <line class="map-line" x1="200" y1="200" x2="350" y2="520"/>
+
+    <!-- 节点 -->
+    <g>
+      <circle class="map-node-pulse" cx="500" cy="350" r="3"/>
+      <circle class="map-node" cx="500" cy="350" r="4"/>
+    </g>
+    <g>
+      <circle class="map-node-pulse" cx="200" cy="200" r="3" style="animation-delay:.5s"/>
+      <circle class="map-node" cx="200" cy="200" r="3.5" style="fill:#ffa502;filter:drop-shadow(0 0 4px rgba(255,165,2,.6))"/>
+    </g>
+    <g>
+      <circle class="map-node-pulse" cx="800" cy="180" r="3" style="animation-delay:1s"/>
+      <circle class="map-node" cx="800" cy="180" r="3.5" style="fill:#ff4757;filter:drop-shadow(0 0 4px rgba(255,71,87,.6))"/>
+    </g>
+    <g>
+      <circle class="map-node-pulse" cx="350" cy="520" r="3" style="animation-delay:1.5s"/>
+      <circle class="map-node" cx="350" cy="520" r="3"/>
+    </g>
+    <g>
+      <circle class="map-node-pulse" cx="720" cy="500" r="3" style="animation-delay:2s"/>
+      <circle class="map-node" cx="720" cy="500" r="3" style="fill:#a29bfe;filter:drop-shadow(0 0 4px rgba(162,155,254,.6))"/>
+    </g>
+    <!-- 额外小节点 -->
+    <circle class="map-node" cx="150" cy="400" r="2" opacity=".5"/>
+    <circle class="map-node" cx="850" cy="380" r="2" opacity=".5"/>
+    <circle class="map-node" cx="600" cy="150" r="2" opacity=".5"/>
+    <circle class="map-node" cx="400" cy="580" r="2" opacity=".5"/>
+    <circle class="map-node" cx="680" cy="250" r="2" opacity=".4"/>
+    <circle class="map-node" cx="280" cy="300" r="2" opacity=".4"/>
+  </svg>
+
+  <!-- 粒子流 -->
+  <div class="vp-particles" id="particles"></div>
+
+  <!-- 顶部标题 -->
+  <div class="vp-header">
+    <div class="vh-title">战略指挥控制中心</div>
+    <div class="vh-sub">STRATEGIC COMMAND & CONTROL CENTER // CLASSIFIED</div>
+  </div>
+
+  <!-- 底部状态 -->
+  <div class="vp-footer">
+    <div class="vp-status">
+      <div class="vs-line"><span class="vs-dot green"></span><span class="vs-label">系统状态</span><span class="vs-val">在线运行</span></div>
+      <div class="vs-line"><span class="vs-dot green"></span><span class="vs-label">推演引擎</span><span class="vs-val">V12.0 已就绪</span></div>
+      <div class="vs-line"><span class="vs-dot amber"></span><span class="vs-label">威胁等级</span><span class="vs-val" style="color:var(--amber)">DEFCON 3</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 右侧登录区 ============ -->
+<div class="hud-tr">系统//认证//安全登录</div>
+
+<div class="login-side">
+  <div class="login-container">
+    <div class="logo-area">
+      <div class="logo-img-wrap">
+        <img src="assets/logo.png" alt="西南政法大学">
+      </div>
+      <div class="logo-divider"><span class="ld-dot"></span></div>
+      <div class="logo-title">国家安全战略<span class="cyan">兵棋推演平台</span></div>
+      <div class="logo-sub">NSS-WGS V12.0 · 西南政法大学自主研发</div>
+    </div>
+
+    <div class="login-card">
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-line"></div>
+        <div class="step-dot"></div>
+      </div>
+
+      <div id="loginStep1">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input class="form-input" id="username" type="text" placeholder="输入您的用户名" autocomplete="username" autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码</label>
+          <input class="form-input" id="password" type="password" placeholder="输入您的密码" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="btnLogin">验证身份 · 进入系统</button>
+        <div class="error-msg" id="loginError"></div>
+      </div>
+    </div>
+
+    <div class="divider">— 首次访问 —</div>
+
+    <button class="btn-secondary" onclick="location.href='register.html'">创建新账户 · 申请授权</button>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+// 生成粒子
+!function(){
+  const container = document.getElementById('particles');
+  if(!container) return;
+  for(let i = 0; i < 30; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = Math.random() * 50 + '%';
+    p.style.animationDelay = Math.random() * 8 + 's';
+    p.style.animationDuration = (6 + Math.random() * 6) + 's';
+    container.appendChild(p);
+  }
+}();
+
+// 控制台数据动画
+!function(){
+  const bars = document.querySelectorAll('#consoleBars .dbg-item');
+  const baseVals = [86, 55, 88, 40, 75, 60];
+  // 域状态条波动
+  setInterval(() => {
+    bars.forEach((item, i) => {
+      const fill = item.querySelector('.dbg-fill');
+      const val = item.querySelector('.dbg-val');
+      const fluctuation = (Math.random() - 0.5) * 6;
+      const newW = Math.max(20, Math.min(95, baseVals[i] + fluctuation));
+      fill.style.width = newW + '%';
+      val.textContent = Math.round(newW);
+    });
+  }, 3500);
+
+  // 雷达光点位置随机变化
+  const blips = document.querySelectorAll('.radar-blip');
+  setInterval(() => {
+    blips.forEach(blip => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 30 + Math.random() * 58;
+      const x = 100 + Math.cos(angle) * dist;
+      const y = 100 + Math.sin(angle) * dist;
+      blip.setAttribute('cx', x.toFixed(1));
+      blip.setAttribute('cy', y.toFixed(1));
+    });
+  }, 3000);
+
+  // 数据流循环
+  const stream = document.querySelector('.screen-stream');
+  const messages = [
+    { tag: '[SYS]', cls: 'ss-prompt', text: '兵棋推演引擎已就绪' },
+    { tag: '[NET]', cls: 'ss-prompt', text: '卫星通信链路正常' },
+    { tag: '[WRN]', cls: 'ss-warn-tag', text: '检测到 3 个潜在威胁节点' },
+    { tag: '[CMD]', cls: 'ss-cmd', text: '等待身份验证授权...' },
+    { tag: '[SYS]', cls: 'ss-prompt', text: '请完成安全登录以进入系统' },
+    { tag: '[NET]', cls: 'ss-prompt', text: '情报数据同步完成' },
+    { tag: '[INF]', cls: 'ss-cmd', text: '六域态势融合分析中' },
+    { tag: '[WRN]', cls: 'ss-warn-tag', text: '台海方向态势升级' },
+  ];
+  let msgIdx = 0;
+  setInterval(() => {
+    const entry = document.createElement('div');
+    entry.className = 'ss-entry';
+    const msg = messages[msgIdx % messages.length];
+    entry.innerHTML = '<span class="' + msg.cls + '">' + msg.tag + '</span>' + msg.text;
+    entry.style.animation = 'termShow .4s ease forwards';
+    stream.appendChild(entry);
+    // 保持最多5条
+    while(stream.children.length > 5){
+      stream.removeChild(stream.firstChild);
+    }
+    msgIdx++;
+  }, 2800);
+}();
+
+(function(){
+  const uname = document.getElementById('username');
+  const pwd = document.getElementById('password');
+  const btn = document.getElementById('btnLogin');
+  const errEl = document.getElementById('loginError');
+
+  if(Auth.isLoggedIn()){
+    location.href = 'index.html';
+    return;
+  }
+
+  function doLogin(){
+    const u = uname.value.trim();
+    const p = pwd.value;
+    if(!u || !p){
+      errEl.textContent = '请输入用户名和密码';
+      return;
+    }
+    btn.textContent = '验证中...';
+    btn.disabled = true;
+    errEl.textContent = '';
+
+    setTimeout(() => {
+      const result = Auth.login(u, p);
+      if(result.ok){
+        errEl.style.color = 'var(--green)';
+        errEl.textContent = '身份验证通过，正在进入系统...';
+        setTimeout(() => { location.href = 'index.html'; }, 600);
+      } else {
+        errEl.style.color = 'var(--red)';
+        errEl.textContent = result.msg;
+        btn.textContent = '验证身份 · 进入系统';
+        btn.disabled = false;
+      }
+    }, 400);
+  }
+
+  btn.addEventListener('click', doLogin);
+  pwd.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+  uname.addEventListener('keydown', e => { if(e.key === 'Enter') pwd.focus(); });
+})();
+</script>
+</body>
+</html>

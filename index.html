@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国家安全战略兵棋推演平台 v12.1 | 战略指挥中心</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+<div class="scanline"></div>
+<div class="hud-corner tl"></div>
+<div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div>
+<div class="hud-corner br"></div>
+
+<div id="app"></div>
+
+<!-- 认证系统（最先加载） -->
+<script src="js/auth.js"></script>
+
+<!-- 引导系统 -->
+<script src="js/onboarding.js"></script>
+
+<!-- 核心模块 -->
+<script src="js/multiplayer.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scenario-config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/bg.js"></script>
+<script src="js/cases.js"></script>
+<script src="js/wargame.js"></script>
+<script src="js/centers.js"></script>
+<script src="js/zones.js"></script>
+<script src="js/roles.js"></script>
+<script src="js/training-content.js"></script>
+<script src="js/director.js"></script>
+<script src="js/aar.js"></script>
+<script src="js/strategic-ops.js"></script>
+<script src="js/app.js"></script>
+<script src="js/manual-inject.js"></script>
+
+<script>
+/* ================================================================
+ * 入口：认证检查 + 引导 + 应用启动
+ * ================================================================ */
+(function(){
+  // 1. 认证检查
+  if(!Auth.isLoggedIn()){
+    location.replace('login.html');
+    return;
+  }
+
+  // 2. 更新系统用户信息
+  const session = Auth.getSession();
+  if(session && typeof USER !== 'undefined'){
+    USER.name = session.name;
+    USER.role = (Auth.ROLES[session.role] || {}).name || session.role;
+    USER.clearance = (Auth.CLEARANCES[session.clearance] || {}).name || session.clearance;
+    USER.org = session.org;
+  }
+
+  // 3. 检查是否需要引导
+  if(Onboarding.needsOnboarding()){
+    console.log('[入口] 需要引导，启动 Onboarding');
+    Onboarding.start();
+    // App.init 将在引导结束后由 Onboarding.finish() 调用
+  } else {
+    // 4. 直接启动应用
+    console.log('[入口] 跳过引导，直接启动 App');
+    try {
+      if(typeof App !== 'undefined' && App.init){
+        App.init();
+      } else {
+        console.error('[入口] App 未定义或 App.init 不存在');
+        document.getElementById('app').innerHTML = '<div style="color:#ff4757;padding:40px;text-align:center"><h2>系统初始化失败</h2><p>App 模块未正确加载。请刷新页面重试。</p></div>';
+      }
+    } catch(e){
+      console.error('[入口] App.init() 抛出异常:', e.message, e.stack);
+      document.getElementById('app').innerHTML = '<div style="color:#ff4757;padding:40px;text-align:center"><h2>系统初始化失败</h2><p>错误: ' + e.message + '</p><p style="font-size:12px;color:#4a6b8a">请检查控制台获取详细错误信息，或刷新页面重试。</p></div>';
+    }
+  }
+
+  // 5. 登出按钮绑定（延迟绑定，等App渲染完）
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.btn-logout')){
+      Auth.logout();
+      location.replace('login.html');
+    }
+    // 重新引导按钮
+    if(e.target.closest('.btn-reonboard')){
+      sessionStorage.removeItem(Onboarding.STORAGE_KEY);
+      location.reload();
+    }
+    // 跳过引导按钮
+    if(e.target.closest('#skipOnboarding')){
+      Onboarding.markDone();
+      location.reload();
+    }
+  });
+})();
+</script>
+</body>
+</html>
