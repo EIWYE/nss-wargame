@@ -596,6 +596,60 @@
   display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
 }
 .wg-section-head span:first-child{font-size:14px;font-weight:700;color:var(--cyan)}
+
+/* 支援行动区 (一体化融合) */
+.wg-support-section{
+  background:var(--bg-panel);border:1px solid var(--border-mid);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:10px;position:relative;
+}
+.wg-support-section::before{
+  content:'';position:absolute;top:0;left:16px;right:16px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--cyan),transparent);
+  opacity:.4;
+}
+.wg-support-head span:first-child{font-size:14px;font-weight:700;color:var(--cyan)}
+.wg-support-grid{display:flex;flex-direction:column;gap:10px}
+.wg-sup-group{margin-bottom:8px}
+.wg-sg-head{
+  display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;margin-bottom:6px;
+}
+.wg-sg-desc{font-size:11px;font-weight:400;color:var(--txt-2);margin-left:6px}
+.wg-sg-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.wg-sup-card{
+  background:var(--bg-glass);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;cursor:pointer;transition:all .2s;position:relative;
+}
+.wg-sup-card:hover:not(.disabled){
+  border-color:var(--border-hi);background:rgba(0,180,216,.04);
+  transform:translateY(-1px);
+}
+.wg-sup-card.selected{
+  border-color:var(--cyan);background:rgba(0,180,216,.08);
+  box-shadow:0 0 8px rgba(0,180,216,.15);
+}
+.wg-sup-card.selected::after{
+  content:'✓';position:absolute;top:6px;right:8px;
+  color:var(--cyan);font-size:13px;font-weight:700;
+}
+.wg-sup-card.disabled{opacity:.4;cursor:not-allowed}
+.wg-sup-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.wg-sup-name{font-size:12px;font-weight:600;color:var(--txt-1)}
+.wg-sup-costs{display:flex;gap:4px;flex-shrink:0}
+.wg-sup-footer{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:11px}
+.wg-sup-effects{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.wg-sup-eff{
+  font-size:10px;padding:1px 5px;border-radius:3px;
+  background:rgba(0,180,216,.06);border:1px solid var(--border);
+}
+.wg-sup-eff.pos{color:var(--green)}
+.wg-sup-eff.neg{color:var(--red)}
+.wg-sup-active-mods{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  margin-top:8px;padding:6px 10px;
+  background:rgba(0,180,216,.05);border:1px solid var(--border-mid);border-radius:6px;
+}
+.wg-sam-label{font-size:11px;color:var(--txt-2);font-weight:600}
+.wg-sam-mod{font-size:11px;padding:2px 6px;border-radius:3px;background:rgba(46,213,115,.08);color:var(--green)}
 .wg-hint{font-size:12px;color:var(--txt-2)}
 
 /* 行动卡片按域分组 */
@@ -3156,6 +3210,10 @@
 .so-round-label{font-size:10px;font-weight:700;min-width:30px;padding-top:1px}
 .so-round-action{font-size:10px;padding:2px 6px;border:1px solid;border-radius:3px;background:rgba(8,20,40,.5)}
 .so-round-effects{margin-top:6px;font-size:10px;display:flex;flex-wrap:wrap;gap:8px;font-family:'Consolas',monospace}
+
+/* 支援行动日志 */
+.so-round-support{display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;padding:4px 6px;margin-bottom:4px;background:rgba(255,165,2,.06);border:1px dashed rgba(255,165,2,.2);border-radius:4px}
+.so-round-action-support{font-size:10px;padding:2px 6px;border:1px solid;border-radius:3px;background:rgba(255,165,2,.08);color:var(--amber)}
 
 /* ===== 情报预警 ===== */
 .so-fusion-alerts,.so-fusion-summary{display:flex;flex-direction:column;gap:8px;padding:12px}

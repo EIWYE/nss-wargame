@@ -1196,6 +1196,120 @@ const ROUND_EVENTS = [
   { title:'终局博弈',   desc:'最后一轮战略博弈，所有力量倾囊而出。最终结果将决定整个推演的胜负。' },
 ];
 
+/* ===== 支援行动库 (一体化战略融合) =====
+ * 支援行动代表功能区在推演中的实时介入,消耗AP
+ * 与战略行动竞争同一AP预算池,模拟真实一体化决策
+ *
+ * supportEffects 特殊效果:
+ *   successRateBonus  - 后续战略行动成功率加成 {域名: 加成}
+ *   forceReadyBoost   - 部队战备度即时提升 {军种code: 提升值}
+ *   fundCostReduce    - 后续行动资金消耗降低比例(0-1)
+ *   escalationChange  - 升级度变化
+ *   revealEnemy       - 揭示敌方下轮行动意图
+ *   enemyDebuff       - 削弱敌方域值 {域名: 削减值}
+ *   extraFunding      - 即时获得资金
+ *   domainBoost       - 即时域值提升 {域名: 提升值}
+ */
+const SUPPORT_ACTIONS = [
+  /* === 情报支援 === */
+  { id:'sup_intel_recon', category:'intel', name:'战略侦察启动', desc:'部署多源侦察体系,获取敌方部署情报,提升后续军事行动精度',
+    cost:1, fundingCost:80, risk:0.1, successBase:82,
+    effects:{ cyber:2, information:2 },
+    supportEffects:{ successRateBonus:{ military:8 }, revealEnemy:true } },
+  { id:'sup_intel_sigint', category:'intel', name:'信号情报搜集', desc:'截获敌方通信信号,解析指挥意图,为网络与信息作战提供支撑',
+    cost:1, fundingCost:60, risk:0.15, successBase:78,
+    effects:{ cyber:3, information:1 },
+    supportEffects:{ successRateBonus:{ cyber:10, information:6 } } },
+  { id:'sup_intel_humint', category:'intel', name:'人力情报渗透', desc:'启动深层人力情报网络,获取敌方决策内幕',
+    cost:2, fundingCost:120, risk:0.3, successBase:60,
+    effects:{ diplomatic:1, information:2 },
+    supportEffects:{ revealEnemy:true, successRateBonus:{ all:5 } } },
+  { id:'sup_intel_ew', category:'intel', name:'电子战压制', desc:'对敌方指挥通信实施电子压制,降低敌方行动效率',
+    cost:2, fundingCost:200, risk:0.2, successBase:68,
+    effects:{ cyber:4, military:2 },
+    supportEffects:{ enemyDebuff:{ military:-5, cyber:-3 } } },
+
+  /* === 后勤保障 === */
+  { id:'sup_log_supply', category:'logistics', name:'前沿补给线建立', desc:'紧急建立战区补给链,提升前沿部队战备状态',
+    cost:1, fundingCost:150, risk:0.05, successBase:85,
+    effects:{ military:3, domestic:2 },
+    supportEffects:{ forceReadyBoost:{ army:5, navy:3, air_force:4 } } },
+  { id:'sup_log_mobilize', category:'logistics', name:'战略投送动员', desc:'动员战略运输力量,实施快速兵力投送',
+    cost:2, fundingCost:300, risk:0.1, successBase:75,
+    effects:{ military:5, economic:-2 },
+    supportEffects:{ forceReadyBoost:{ army:8, navy:5, air_force:6, rocket:4 } } },
+  { id:'sup_log_reserve', category:'logistics', name:'战略储备启用', desc:'启用国家战略物资储备,释放作战资源',
+    cost:1, fundingCost:0, risk:0.05, successBase:88,
+    effects:{ economic:3, domestic:3 },
+    supportEffects:{ extraFunding:300, fundCostReduce:0.1 } },
+  { id:'sup_log_medical', category:'logistics', name:'战区医疗救援', desc:'部署战区医疗力量,保障部队持续作战能力',
+    cost:1, fundingCost:50, risk:0.05, successBase:90,
+    effects:{ domestic:4, military:1 },
+    supportEffects:{ forceReadyBoost:{ army:2, navy:2, air_force:2 } } },
+
+  /* === 经济调控 === */
+  { id:'sup_eco_sanction', category:'economy', name:'定向经济制裁', desc:'对敌方关键经济领域实施精准制裁,削弱其战争潜力',
+    cost:2, fundingCost:100, risk:0.2, successBase:70,
+    effects:{ economic:4, diplomatic:-2 },
+    supportEffects:{ enemyDebuff:{ economic:-8 } } },
+  { id:'sup_eco_finance', category:'economy', name:'战时金融管制', desc:'实施金融管制措施,稳定经济基本盘,降低作战资金消耗',
+    cost:1, fundingCost:50, risk:0.1, successBase:80,
+    effects:{ economic:3, domestic:2 },
+    supportEffects:{ fundCostReduce:0.15, extraFunding:200 } },
+  { id:'sup_eco_trade', category:'economy', name:'贸易通道保障', desc:'保障关键贸易通道安全,维持经济运转',
+    cost:1, fundingCost:100, risk:0.1, successBase:78,
+    effects:{ economic:4, diplomatic:2 },
+    supportEffects:{ successRateBonus:{ economic:8 } } },
+  { id:'sup_eco_resource', category:'economy', name:'战略资源调配', desc:'统筹调配国家战略资源,全域小幅增强',
+    cost:2, fundingCost:200, risk:0.05, successBase:82,
+    effects:{ military:2, economic:3, cyber:1, diplomatic:1, information:1, domestic:2 },
+    supportEffects:{ successRateBonus:{ all:3 }, extraFunding:150 } },
+
+  /* === 外交协调 === */
+  { id:'sup_dip_lobby', category:'diplomatic', name:'国际外交斡旋', desc:'通过外交渠道开展国际斡旋,降低冲突升级风险',
+    cost:1, fundingCost:30, risk:0.1, successBase:80,
+    effects:{ diplomatic:4, information:1 },
+    supportEffects:{ escalationChange:-1 } },
+  { id:'sup_dip_alliance', category:'diplomatic', name:'盟友协调行动', desc:'协调盟友开展联合行动,形成多边合力',
+    cost:2, fundingCost:100, risk:0.15, successBase:72,
+    effects:{ diplomatic:5, military:2, economic:1 },
+    supportEffects:{ successRateBonus:{ military:5, diplomatic:8 }, forceReadyBoost:{ army:3, navy:3 } } },
+  { id:'sup_dip_pressure', category:'diplomatic', name:'国际舆论施压', desc:'动员国际舆论对敌方施加压力',
+    cost:1, fundingCost:40, risk:0.15, successBase:75,
+    effects:{ information:4, diplomatic:2 },
+    supportEffects:{ enemyDebuff:{ information:-5, diplomatic:-3 } } },
+  { id:'sup_dip_coalition', category:'diplomatic', name:'多边联盟构建', desc:'构建多边安全联盟,提升国际声望与战略纵深',
+    cost:2, fundingCost:150, risk:0.1, successBase:70,
+    effects:{ diplomatic:6, domestic:3, information:2 },
+    supportEffects:{ successRateBonus:{ all:4 }, escalationChange:-1 } },
+
+  /* === 科技信息战 === */
+  { id:'sup_tech_cyber', category:'tech', name:'网络攻防部署', desc:'部署网络攻防力量,夺取网络空间优势',
+    cost:2, fundingCost:150, risk:0.2, successBase:72,
+    effects:{ cyber:6, information:2 },
+    supportEffects:{ enemyDebuff:{ cyber:-6, information:-3 } } },
+  { id:'sup_tech_rnd', category:'tech', name:'紧急技术动员', desc:'动员科研力量进行技术攻关,为后续行动提供技术支撑',
+    cost:1, fundingCost:100, risk:0.1, successBase:78,
+    effects:{ cyber:3, economic:2, information:2 },
+    supportEffects:{ successRateBonus:{ cyber:6, economic:4 }, extraFunding:100 } },
+  { id:'sup_tech_info', category:'tech', name:'信息舆论引导', desc:'启动信息舆论引导机制,塑造有利舆论环境',
+    cost:1, fundingCost:60, risk:0.1, successBase:80,
+    effects:{ information:5, domestic:2 },
+    supportEffects:{ successRateBonus:{ information:8, domestic:5 } } },
+  { id:'sup_tech_satellite', category:'tech', name:'天基信息支援', desc:'调动卫星侦察与通信资源,提供太空信息支援',
+    cost:2, fundingCost:250, risk:0.1, successBase:76,
+    effects:{ cyber:4, information:3, military:2 },
+    supportEffects:{ successRateBonus:{ military:4, cyber:5, information:5 }, revealEnemy:true } },
+];
+
+const SUPPORT_CATEGORIES = [
+  { id:'intel',     name:'情报支援',   icon:'🔍', color:'#00b4d8', desc:'侦察/信号/渗透/电子战' },
+  { id:'logistics', name:'后勤保障',   icon:'📦', color:'#ffa502', desc:'补给/投送/储备/医疗' },
+  { id:'economy',   name:'经济调控',   icon:'💰', color:'#2ed573', desc:'制裁/金融/贸易/资源' },
+  { id:'diplomatic',name:'外交协调',   icon:'🤝', color:'#a29bfe', desc:'斡旋/盟友/施压/联盟' },
+  { id:'tech',      name:'科技信息战', icon:'🌐', color:'#ff6348', desc:'网络/技术/舆论/天基' },
+];
+
 /* ===== 推演引擎 ===== */
 const Wargame = {
   state: null,
@@ -1310,6 +1424,18 @@ const Wargame = {
       /* 力量/情报历史（供复盘报告使用） */
       forceHistory: [forcesSnapshot.map(f => ({...f}))],
       intelHistory: [],
+      /* 支援行动系统 (一体化融合) */
+      selectedSupportActions: [],
+      activeSupportMods: {
+        successRateBonus: {},
+        forceReadyBoost: {},
+        fundCostReduce: 0,
+        escalationChange: 0,
+        revealEnemy: false,
+        enemyDebuff: {},
+        extraFunding: 0,
+      },
+      supportLog: [],
     };
 
     /* 应用初始情报修正 */
@@ -1399,6 +1525,199 @@ const Wargame = {
     return [...general, ...special];
   },
 
+  /* ===== 获取可用支援行动 ===== */
+  getAvailableSupportActions(){
+    if(!this.state) return [];
+    const sc = this.state.scenario;
+    const responseDomains = sc.response || ['military','diplomatic','economic'];
+    /* 所有支援行动均可用,但根据场景响应域过滤最相关的 */
+    const allowed = [...new Set([...responseDomains, 'domestic','cyber','information'])];
+    return SUPPORT_ACTIONS.filter(a => {
+      /* 根据类别映射到域,过滤不相关类别 */
+      const catToDomains = {
+        intel:['cyber','information','military'],
+        logistics:['military','domestic','economic'],
+        economy:['economic','diplomatic'],
+        diplomatic:['diplomatic','information'],
+        tech:['cyber','information'],
+      };
+      const catDoms = catToDomains[a.category] || [];
+      return catDoms.some(d => allowed.includes(d));
+    });
+  },
+
+  /* ===== 选择/取消支援行动 ===== */
+  toggleSupportAction(actionId){
+    if(this.state.phase !== 'acting') return;
+    const action = SUPPORT_ACTIONS.find(a => a.id === actionId);
+    if(!action) return;
+    const idx = this.state.selectedSupportActions.findIndex(a => a.id === actionId);
+    if(idx >= 0){
+      this.state.selectedSupportActions.splice(idx, 1);
+      this.state.actionPoints += action.cost;
+      this.state.funding += action.fundingCost;
+    } else {
+      if(this.state.actionPoints < action.cost) return;
+      if(this.state.funding < action.fundingCost) return;
+      this.state.selectedSupportActions.push(action);
+      this.state.actionPoints -= action.cost;
+      this.state.funding -= action.fundingCost;
+    }
+    this._recalcSupportMods();
+    this.updateActionPanel();
+  },
+
+  /* ===== 重新计算支援行动修正 ===== */
+  _recalcSupportMods(){
+    if(!this.state) return;
+    const mods = {
+      successRateBonus: {},
+      forceReadyBoost: {},
+      fundCostReduce: 0,
+      escalationChange: 0,
+      revealEnemy: false,
+      enemyDebuff: {},
+      extraFunding: 0,
+    };
+    for(const a of this.state.selectedSupportActions){
+      const se = a.supportEffects || {};
+      if(se.successRateBonus){
+        for(const [dom, val] of Object.entries(se.successRateBonus)){
+          mods.successRateBonus[dom] = (mods.successRateBonus[dom] || 0) + val;
+        }
+      }
+      if(se.forceReadyBoost){
+        for(const [code, val] of Object.entries(se.forceReadyBoost)){
+          mods.forceReadyBoost[code] = (mods.forceReadyBoost[code] || 0) + val;
+        }
+      }
+      if(se.fundCostReduce) mods.fundCostReduce = Math.min(0.4, mods.fundCostReduce + se.fundCostReduce);
+      if(se.escalationChange) mods.escalationChange += se.escalationChange;
+      if(se.revealEnemy) mods.revealEnemy = true;
+      if(se.enemyDebuff){
+        for(const [dom, val] of Object.entries(se.enemyDebuff)){
+          mods.enemyDebuff[dom] = (mods.enemyDebuff[dom] || 0) + val;
+        }
+      }
+      if(se.extraFunding) mods.extraFunding += se.extraFunding;
+    }
+    this.state.activeSupportMods = mods;
+  },
+
+  /* ===== 执行支援行动 (在confirmActions中调用) ===== */
+  _executeSupportActions(){
+    const s = this.state;
+    if(s.selectedSupportActions.length === 0) return [];
+
+    const results = [];
+    for(const action of s.selectedSupportActions){
+      const roll = Math.floor(Math.random() * 100) + 1;
+      const rate = this.calcSupportSuccessRate(action);
+      let outcome;
+      if(roll <= rate * 0.25){
+        outcome = 'great'; /* 大成功 */
+      } else if(roll <= rate){
+        outcome = 'success';
+      } else {
+        outcome = 'failure';
+      }
+
+      const mult = outcome === 'great' ? 1.5 : outcome === 'success' ? 1.0 : 0.3;
+      const se = action.supportEffects || {};
+      const appliedEffects = {};
+
+      /* 应用域效果 */
+      if(action.effects){
+        for(const [dom, val] of Object.entries(action.effects)){
+          if(val !== 0 && s.domains[dom] !== undefined){
+            s.domains[dom] = Math.max(0, Math.min(100, s.domains[dom] + Math.round(val * mult)));
+            appliedEffects[dom] = Math.round(val * mult);
+          }
+        }
+      }
+
+      /* 应用即时资金 */
+      if(se.extraFunding && outcome !== 'failure'){
+        const fundGain = Math.round(se.extraFunding * mult);
+        s.funding += fundGain;
+        appliedEffects.extraFunding = fundGain;
+      }
+
+      /* 应用战备提升 */
+      if(se.forceReadyBoost && outcome !== 'failure'){
+        for(const [code, val] of Object.entries(se.forceReadyBoost)){
+          const force = s.forces.find(f => f.code === code);
+          if(force){
+            const boost = Math.round(val * mult);
+            force.readiness = Math.min(100, force.readiness + boost);
+            appliedEffects['force_' + code] = boost;
+          }
+        }
+      }
+
+      /* 应用升级度变化 */
+      if(se.escalationChange && outcome !== 'failure'){
+        const escChange = Math.round(se.escalationChange * mult);
+        s.escalation = Math.max(1, Math.min(5, s.escalation + escChange));
+        appliedEffects.escalation = escChange;
+      }
+
+      /* 应用敌方削弱 */
+      if(se.enemyDebuff && outcome !== 'failure'){
+        appliedEffects.enemyDebuff = {};
+        for(const [dom, val] of Object.entries(se.enemyDebuff)){
+          appliedEffects.enemyDebuff[dom] = Math.round(val * mult);
+        }
+      }
+
+      /* 记录日志 */
+      const logEntry = {
+        type: 'support',
+        action: action.name,
+        category: action.category,
+        outcome,
+        roll,
+        rate,
+        effects: appliedEffects,
+        round: s.round,
+      };
+      results.push(logEntry);
+      s.supportLog.push(logEntry);
+
+      s.log.push({
+        type: 'support',
+        text: `${SUPPORT_CATEGORIES.find(c => c.id === action.category).icon} [支援] ${action.name} — ${outcome === 'great' ? '大成功!' : outcome === 'success' ? '成功' : '失败'} (骰:${roll}/${rate}%)`,
+        round: s.round,
+      });
+
+      /* 失败风险: 有概率暴露/反噬 */
+      if(outcome === 'failure' && action.risk >= 0.2){
+        const backlash = Math.round(action.risk * 10);
+        s.domains[action.domain || 'information'] = Math.max(0, (s.domains[action.domain || 'information'] || 50) - backlash);
+        s.log.push({
+          type: 'support',
+          text: `⚠️ ${action.name}失败反噬: ${action.category}域 -${backlash}`,
+          round: s.round,
+        });
+      }
+    }
+
+    return results;
+  },
+
+  /* ===== 计算支援行动成功率 ===== */
+  calcSupportSuccessRate(action){
+    let rate = action.successBase;
+    const s = this.state;
+    /* 升级度影响: 高升级度下情报行动成功率降低 */
+    if(action.category === 'intel' && s.escalation >= 3) rate -= 5;
+    /* 经济域加成 */
+    if(action.category === 'economy' && s.domains.economic >= 60) rate += 5;
+    /* 外交域加成 */
+    if(action.category === 'diplomatic' && s.domains.diplomatic >= 60) rate += 5;
+    return Math.max(20, Math.min(95, Math.round(rate)));
+  },
+
   /* ===== 计算行动成功率 ===== */
   calcSuccessRate(action){
     let rate = action.successBase;
@@ -1457,6 +1776,19 @@ const Wargame = {
       rate += 2; /* 联合行动解锁提供小幅全域加成 */
     }
 
+    /* 支援行动修正 (一体化融合核心) */
+    if(s.activeSupportMods){
+      const sm = s.activeSupportMods;
+      /* 域专属成功率加成 */
+      if(sm.successRateBonus[action.domain]){
+        rate += sm.successRateBonus[action.domain];
+      }
+      /* 全域成功率加成 */
+      if(sm.successRateBonus.all){
+        rate += sm.successRateBonus.all;
+      }
+    }
+
     /* 资金充足修正 */
     if(s.funding > action.fundingCost * 3) rate += 5;
 
@@ -1494,9 +1826,12 @@ const Wargame = {
 
   /* ===== 确认行动 → 骰子裁决 → AI响应 ===== */
   confirmActions(){
-    if(this.state.selectedActions.length === 0) return;
+    if(this.state.selectedActions.length === 0 && this.state.selectedSupportActions.length === 0) return;
     this.state.phase = 'resolution';
     const s = this.state;
+
+    /* 0. 先执行支援行动 (影响后续战略行动) */
+    const supportResults = this._executeSupportActions();
 
     /* 1. 逐个行动掷骰 */
     const diceResults = [];
@@ -1669,6 +2004,16 @@ const Wargame = {
     this.state.phase = 'acting';
     this.state.actionPoints = this.state.maxAP;
     this.state.selectedActions = [];
+    this.state.selectedSupportActions = [];
+    this.state.activeSupportMods = {
+      successRateBonus: {},
+      forceReadyBoost: {},
+      fundCostReduce: 0,
+      escalationChange: 0,
+      revealEnemy: false,
+      enemyDebuff: {},
+      extraFunding: 0,
+    };
     this.state.lastAIAction = null;
     this.state.lastChanges = null;
     this.state.lastDiceResults = null;
@@ -1917,6 +2262,29 @@ const Wargame = {
               ` : ''}
             </div>
 
+            <!-- 支援行动选择 (一体化融合) -->
+            <div class="wg-support-section">
+              <div class="wg-section-head wg-support-head">
+                <span>🎖️ 功能区支援行动</span>
+                <span class="wg-hint">消耗AP · 提升后续战略行动效果 · 与战略行动竞争同一AP池</span>
+              </div>
+              <div class="wg-support-grid" id="wgSupportGrid">
+                ${this.renderSupportActionCards()}
+              </div>
+              ${this.state.activeSupportMods && (Object.keys(this.state.activeSupportMods.successRateBonus).length > 0 || this.state.activeSupportMods.revealEnemy || this.state.activeSupportMods.fundCostReduce > 0) ? `
+                <div class="wg-sup-active-mods">
+                  <span class="wg-sam-label">当前支援效果:</span>
+                  ${Object.entries(this.state.activeSupportMods.successRateBonus).map(([d,v]) => {
+                    const dm = WG_DOMAINS.find(w => w.id === d);
+                    return `<span class="wg-sam-mod pos">${dm ? dm.icon : '🌐'} +${v}%</span>`;
+                  }).join('')}
+                  ${this.state.activeSupportMods.revealEnemy ? '<span class="wg-sam-mod pos">👁️ 已揭示敌方</span>' : ''}
+                  ${this.state.activeSupportMods.fundCostReduce > 0 ? `<span class="wg-sam-mod pos">💰 消耗-${Math.round(this.state.activeSupportMods.fundCostReduce*100)}%</span>` : ''}
+                  ${this.state.activeSupportMods.escalationChange < 0 ? `<span class="wg-sam-mod pos">⚠️ 升级${this.state.activeSupportMods.escalationChange}</span>` : ''}
+                </div>
+              ` : ''}
+            </div>
+
             <!-- 行动选择 -->
             <div class="wg-actions-section">
               <div class="wg-section-head">
@@ -2027,6 +2395,9 @@ const Wargame = {
     }
     document.querySelectorAll('[data-action]').forEach(el => {
       el.addEventListener('click', () => this.toggleAction(el.getAttribute('data-action')));
+    });
+    document.querySelectorAll('[data-support-action]').forEach(el => {
+      el.addEventListener('click', () => this.toggleSupportAction(el.getAttribute('data-support-action')));
     });
     document.querySelectorAll('[data-zone-support]').forEach(el => {
       el.addEventListener('click', () => this._callZoneSupport(el.getAttribute('data-zone-support')));
@@ -2207,6 +2578,80 @@ const Wargame = {
       </div>`;
     }
     return html;
+  },
+
+  /* ===== 支援行动卡片渲染 ===== */
+  renderSupportActionCards(){
+    const actions = this.getAvailableSupportActions();
+    if(actions.length === 0) return '<div class="wg-log-empty">本场景无可用支援行动</div>';
+    const grouped = {};
+    for(const a of actions){
+      if(!grouped[a.category]) grouped[a.category] = [];
+      grouped[a.category].push(a);
+    }
+    let html = '';
+    for(const cat of SUPPORT_CATEGORIES){
+      const catActions = grouped[cat.id] || [];
+      if(catActions.length === 0) continue;
+      html += `<div class="wg-sup-group">
+        <div class="wg-sg-head" style="color:${cat.color}">${cat.icon} ${cat.name}<span class="wg-sg-desc">${cat.desc}</span></div>
+        <div class="wg-sg-actions">
+          ${catActions.map(a => this.renderSupportCard(a, cat)).join('')}
+        </div>
+      </div>`;
+    }
+    return html;
+  },
+
+  renderSupportCard(a, cat){
+    const selected = this.state.selectedSupportActions.find(s => s.id === a.id);
+    const canAffordAP = this.state.actionPoints >= a.cost || selected;
+    const canAffordFund = this.state.funding >= a.fundingCost || selected;
+    const canAfford = canAffordAP && canAffordFund;
+    const successRate = this.calcSupportSuccessRate(a);
+    const riskLabel = a.risk >= 0.3 ? '高风险' : a.risk >= 0.15 ? '中风险' : '低风险';
+    const riskColor = a.risk >= 0.3 ? 'var(--red)' : a.risk >= 0.15 ? 'var(--amber)' : 'var(--green)';
+    const se = a.supportEffects || {};
+    let effectBadges = '';
+    if(se.successRateBonus){
+      for(const [dom, val] of Object.entries(se.successRateBonus)){
+        const dm = WG_DOMAINS.find(d => d.id === dom);
+        effectBadges += `<span class="wg-sup-eff pos">${dm ? dm.icon : '🌐'} 成功率+${val}%</span>`;
+      }
+    }
+    if(se.forceReadyBoost){
+      const codes = Object.keys(se.forceReadyBoost);
+      const total = codes.reduce((s,c) => s + se.forceReadyBoost[c], 0);
+      effectBadges += `<span class="wg-sup-eff pos">⚔️ 战备+${total}</span>`;
+    }
+    if(se.fundCostReduce) effectBadges += `<span class="wg-sup-eff pos">💰 消耗-${Math.round(se.fundCostReduce*100)}%</span>`;
+    if(se.extraFunding) effectBadges += `<span class="wg-sup-eff pos">💰 +${se.extraFunding}亿</span>`;
+    if(se.escalationChange) effectBadges += `<span class="wg-sup-eff ${se.escalationChange < 0 ? 'pos' : 'neg'}">⚠️ ${se.escalationChange > 0 ? '+' : ''}${se.escalationChange}</span>`;
+    if(se.revealEnemy) effectBadges += `<span class="wg-sup-eff pos">👁️ 揭示敌方</span>`;
+    if(se.enemyDebuff){
+      for(const [dom, val] of Object.entries(se.enemyDebuff)){
+        const dm = WG_DOMAINS.find(d => d.id === dom);
+        effectBadges += `<span class="wg-sup-eff neg">${dm ? dm.icon : '🌐'} 敌${val}</span>`;
+      }
+    }
+
+    return `
+      <div class="wg-sup-card ${selected ? 'selected' : ''} ${!canAfford ? 'disabled' : ''}" data-support-action="${a.id}">
+        <div class="wg-sup-head">
+          <span class="wg-sup-name">${esc2(a.name)}</span>
+          <div class="wg-sup-costs">
+            <span class="wg-ac-cost">${a.cost}AP</span>
+            ${a.fundingCost > 0 ? `<span class="wg-ac-fund">💰${a.fundingCost}</span>` : ''}
+          </div>
+        </div>
+        <div class="wg-ac-desc">${esc2(a.desc)}</div>
+        <div class="wg-sup-footer">
+          <span class="wg-ac-risk" style="color:${riskColor}">${riskLabel}</span>
+          <span class="wg-ac-success">成功率 ${successRate}%</span>
+        </div>
+        <div class="wg-sup-effects">${effectBadges}</div>
+      </div>
+    `;
   },
 
   renderActionCard(a){
@@ -2417,9 +2862,11 @@ const Wargame = {
     const fundEl = document.querySelector('.wg-fund-value');
     if(fundEl) fundEl.innerHTML = `${this.state.funding}<span class="wg-fund-unit">亿</span>`;
     const cntEl = document.querySelector('.wg-selected-count');
-    if(cntEl) cntEl.textContent = `已选 ${this.state.selectedActions.length} 项`;
+    if(cntEl) cntEl.textContent = `已选 ${this.state.selectedActions.length + this.state.selectedSupportActions.length} 项`;
     const confirmBtn = document.getElementById('wgConfirm');
-    if(confirmBtn) confirmBtn.disabled = this.state.selectedActions.length === 0;
+    if(confirmBtn) confirmBtn.disabled = this.state.selectedActions.length === 0 && this.state.selectedSupportActions.length === 0;
+
+    /* 更新战略行动卡片 */
     document.querySelectorAll('[data-action]').forEach(el => {
       const actionId = el.getAttribute('data-action');
       const action = STRATEGIC_ACTIONS.find(a => a.id === actionId);
@@ -2427,13 +2874,51 @@ const Wargame = {
       const isSelected = this.state.selectedActions.find(s => s.id === actionId);
       const canAffordAP = this.state.actionPoints >= action.cost || isSelected;
       const canAffordFund = this.state.funding >= action.fundingCost || isSelected;
-      /* 力量门槛检查 */
       const forceCode = getActionForce(action);
       const force = forceCode ? this.state.forces.find(f => f.code === forceCode) : null;
       const forceOk = !force || force.readiness >= 30;
       el.classList.toggle('selected', !!isSelected);
       el.classList.toggle('disabled', !(canAffordAP && canAffordFund && forceOk));
+      /* 更新成功率显示 (受支援行动影响) */
+      const successEl = el.querySelector('.wg-ac-success');
+      if(successEl){
+        const newRate = this.calcSuccessRate(action);
+        successEl.textContent = `成功率 ${newRate}%`;
+      }
     });
+
+    /* 更新支援行动卡片 */
+    document.querySelectorAll('[data-support-action]').forEach(el => {
+      const actionId = el.getAttribute('data-support-action');
+      const action = SUPPORT_ACTIONS.find(a => a.id === actionId);
+      if(!action) return;
+      const isSelected = this.state.selectedSupportActions.find(s => s.id === actionId);
+      const canAffordAP = this.state.actionPoints >= action.cost || isSelected;
+      const canAffordFund = this.state.funding >= action.fundingCost || isSelected;
+      el.classList.toggle('selected', !!isSelected);
+      el.classList.toggle('disabled', !(canAffordAP && canAffordFund));
+    });
+
+    /* 更新支援效果面板 */
+    const samEl = document.querySelector('.wg-sup-active-mods');
+    if(samEl){
+      const sm = this.state.activeSupportMods;
+      const hasMods = Object.keys(sm.successRateBonus).length > 0 || sm.revealEnemy || sm.fundCostReduce > 0 || sm.escalationChange < 0;
+      if(hasMods){
+        let modsHtml = '<span class="wg-sam-label">当前支援效果:</span>';
+        for(const [d, v] of Object.entries(sm.successRateBonus)){
+          const dm = WG_DOMAINS.find(w => w.id === d);
+          modsHtml += `<span class="wg-sam-mod pos">${dm ? dm.icon : '🌐'} +${v}%</span>`;
+        }
+        if(sm.revealEnemy) modsHtml += '<span class="wg-sam-mod pos">👁️ 已揭示敌方</span>';
+        if(sm.fundCostReduce > 0) modsHtml += `<span class="wg-sam-mod pos">💰 消耗-${Math.round(sm.fundCostReduce*100)}%</span>`;
+        if(sm.escalationChange < 0) modsHtml += `<span class="wg-sam-mod pos">⚠️ 升级${sm.escalationChange}</span>`;
+        samEl.innerHTML = modsHtml;
+        samEl.style.display = '';
+      } else {
+        samEl.style.display = 'none';
+      }
+    }
   },
 
   /* ===== 计算我方本轮分值 ===== */

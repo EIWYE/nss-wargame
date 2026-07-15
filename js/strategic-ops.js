@@ -613,8 +613,8 @@ const StrategicEngine = {
     return [...general, ...special];
   },
 
-  /* ---- 计算行动成功率（简化版 Wargame.calcSuccessRate） ---- */
-  _calcSuccessRate(action, state){
+  /* ---- 计算行动成功率（融合支援行动加成） ---- */
+  _calcSuccessRate(action, state, supportRateBonus){
     let rate = action.successBase || 60;
     const domainVal = state.domains[action.domain] || 50;
     rate += (domainVal - 50) * 0.2;
@@ -622,6 +622,11 @@ const StrategicEngine = {
     rate += (state.domesticSupport - 50) * 0.05;
     if(action.domain === 'diplomatic' && state.escalation >= 3) rate -= 8;
     if(state.funding > (action.fundingCost || 0) * 3) rate += 3;
+    /* 支援行动成功率加成 */
+    if(supportRateBonus){
+      if(supportRateBonus[action.domain]) rate += supportRateBonus[action.domain];
+      if(supportRateBonus.all) rate += supportRateBonus.all;
+    }
     return Math.max(20, Math.min(95, Math.round(rate)));
   },
 
@@ -653,6 +658,157 @@ const StrategicEngine = {
       }
     }
     return selected;
+  },
+
+  /* ---- AI 选择支援行动（一体化融合） ---- */
+  _selectSupportActions(state, maxAP){
+    if(typeof SUPPORT_ACTIONS === 'undefined') return [];
+    const weakDomains = Object.entries(state.domains)
+      .sort(([,a],[,b]) => a - b).slice(0, 3).map(([k]) => k);
+
+    const available = SUPPORT_ACTIONS.map(sa => {
+      let score = 0;
+      /* 支援最弱领域获得高分 */
+      if(sa.supportEffects && sa.supportEffects.successRateBonus){
+        Object.keys(sa.supportEffects.successRateBonus).forEach(d => {
+          if(weakDomains.includes(d)) score += 15;
+          else score += 5;
+        });
+      }
+      /* 军事弱势时优先力量战备提升 */
+      if(sa.supportEffects && sa.supportEffects.forceReadyBoost && state.domains.military < 60) score += 12;
+      /* 资金不足时优先资金获取 */
+      if(sa.supportEffects && sa.supportEffects.extraFunding && state.funding < 300) score += 13;
+      /* 升级度过高时优先降级 */
+      if(sa.supportEffects && sa.supportEffects.escalationChange < 0 && state.escalation >= 4) score += 10;
+      /* 侦察价值 */
+      if(sa.supportEffects && sa.supportEffects.revealEnemy) score += 7;
+      /* 敌方削弱在高对抗场景有价值 */
+      if(sa.supportEffects && sa.supportEffects.enemyDebuff && state.escalation >= 2) score += 6;
+      /* 风险惩罚 */
+      score -= (sa.risk || 0) * 8;
+      /* 随机因子 */
+      score += Math.random() * 5;
+      return { action: sa, score, cost: sa.cost || 1 };
+    }).sort((a, b) => b.score - a.score);
+
+    const selected = [];
+    let ap = maxAP;
+    for(const s of available){
+      if(ap >= s.cost && selected.length < 3){
+        selected.push(s.action);
+        ap -= s.cost;
+      }
+    }
+    return selected;
+  },
+
+  /* ---- 计算支援行动成功率 ---- */
+  _calcSupportSuccessRate(action, state){
+    let rate = action.successBase || 80;
+    const domainVal = state.domains.information || 50;
+    rate += (domainVal - 50) * 0.15;
+    rate += (state.reputation - 50) * 0.08;
+    if(state.escalation >= 3) rate -= 5;
+    if(state.funding > (action.fundingCost || 0) * 3) rate += 3;
+    return Math.max(25, Math.min(95, Math.round(rate)));
+  },
+
+  /* ---- 执行支援行动并返回效果集合 ---- */
+  _executeSupportActions(selectedActions, state){
+    const effects = {
+      domainChanges: {},
+      successRateBonus: {},
+      forceReadyBoost: {},
+      fundCostReduce: 0,
+      escalationChange: 0,
+      extraFunding: 0,
+      revealEnemy: false,
+      enemyDebuff: {},
+      log: [],
+      totalCost: 0,
+    };
+
+    selectedActions.forEach(act => {
+      const successRate = this._calcSupportSuccessRate(act, state);
+      const roll = Math.floor(Math.random() * 100) + 1;
+      const isGreat = roll <= successRate * 0.25;
+      const isSuccess = roll <= successRate;
+      const mult = isGreat ? 1.5 : isSuccess ? 1.0 : 0.3;
+
+      /* 应用域效果 */
+      if(act.effects){
+        Object.entries(act.effects).forEach(([k, v]) => {
+          effects.domainChanges[k] = (effects.domainChanges[k] || 0) + Math.round(v * mult);
+        });
+      }
+
+      /* 应用支援效果 */
+      if(act.supportEffects){
+        const se = act.supportEffects;
+
+        /* 行动成功率加成 */
+        if(se.successRateBonus){
+          Object.entries(se.successRateBonus).forEach(([k, v]) => {
+            effects.successRateBonus[k] = Math.round((effects.successRateBonus[k] || 0) + v * mult);
+          });
+        }
+
+        /* 力量战备提升 */
+        if(se.forceReadyBoost){
+          Object.entries(se.forceReadyBoost).forEach(([k, v]) => {
+            effects.forceReadyBoost[k] = (effects.forceReadyBoost[k] || 0) + Math.round(v * mult);
+          });
+        }
+
+        /* 资金消耗降低 */
+        if(se.fundCostReduce){
+          effects.fundCostReduce += Math.round(se.fundCostReduce * mult);
+        }
+
+        /* 升级度变化 */
+        if(se.escalationChange){
+          effects.escalationChange += Math.round(se.escalationChange * mult);
+        }
+
+        /* 额外资金获取 */
+        if(se.extraFunding){
+          effects.extraFunding += Math.round(se.extraFunding * mult);
+        }
+
+        /* 侦察暴露 */
+        if(se.revealEnemy) effects.revealEnemy = true;
+
+        /* 敌方削弱 */
+        if(se.enemyDebuff){
+          Object.entries(se.enemyDebuff).forEach(([k, v]) => {
+            effects.enemyDebuff[k] = (effects.enemyDebuff[k] || 0) + Math.round(v * mult);
+          });
+        }
+      }
+
+      /* 资金消耗 */
+      effects.totalCost += (act.fundingCost || 0);
+
+      /* 高风险行动失败反噬 */
+      if(!isSuccess && (act.risk || 0) >= 0.2){
+        const actDomainMap = { intel:'information', logistics:'military', economy:'economic', diplomatic:'diplomatic', tech:'information' };
+        const actDomain = actDomainMap[act.category] || 'information';
+        effects.domainChanges[actDomain] = (effects.domainChanges[actDomain] || 0) - 3;
+      }
+
+      effects.log.push({
+        action: act.name,
+        category: act.category,
+        roll, successRate,
+        result: isGreat ? '大成功' : isSuccess ? '成功' : '失败',
+        mult,
+        cost: act.cost || 1,
+        fundingCost: act.fundingCost || 0,
+      });
+    });
+
+    return effects;
   },
 
   /* ---- AI 选择反制行动 ---- */
@@ -707,14 +863,51 @@ const StrategicEngine = {
       roundByRound: [],
     };
 
-    /* 逐轮推演 */
+    /* 逐轮推演（一体化融合：支援→战略→反制） */
     while(state.round <= state.maxRounds){
-      const playerActions = this._selectActions(actions, state, 5);
+
+      /* === 阶段一：选择并执行支援行动 === */
+      const supportActions = this._selectSupportActions(state, 2);
+      let supportResults = null;
+      let supportRateBonus = {};
+
+      if(supportActions.length > 0){
+        supportResults = this._executeSupportActions(supportActions, state);
+
+        /* 应用支援域效果 */
+        Object.entries(supportResults.domainChanges).forEach(([k, v]) => {
+          state.domains[k] = Math.max(0, Math.min(100, (state.domains[k] || 50) + v));
+        });
+
+        /* 应用力量战备提升 */
+        if(supportResults.forceReadyBoost){
+          state.forces.forEach(f => {
+            const key = f.name || f.branch || '';
+            const boost = supportResults.forceReadyBoost[key] || supportResults.forceReadyBoost.all || 0;
+            f.readiness = Math.min(100, (f.readiness || 70) + boost);
+          });
+        }
+
+        /* 应用资金变化 */
+        state.funding += supportResults.extraFunding;
+        state.funding -= supportResults.totalCost;
+
+        /* 应用升级度变化 */
+        state.escalation = Math.max(1, Math.min(5, state.escalation + supportResults.escalationChange));
+
+        /* 记录支援成功率加成供后续战略行动使用 */
+        supportRateBonus = supportResults.successRateBonus;
+      }
+
+      /* === 阶段二：选择并执行战略行动 === */
+      const supportAP = supportActions.length > 0 ? supportResults.log.reduce((s, l) => s + l.cost, 0) : 0;
+      const remainingAP = Math.max(1, 5 - supportAP);
+      const playerActions = this._selectActions(actions, state, remainingAP);
       const playerEffects = {};
       const diceResults = [];
 
       playerActions.forEach(act => {
-        const successRate = this._calcSuccessRate(act, state);
+        const successRate = this._calcSuccessRate(act, state, supportRateBonus);
         const roll = Math.floor(Math.random() * 100) + 1;
         const isGreat = roll <= successRate * 0.25;
         const isSuccess = roll <= successRate;
@@ -731,14 +924,27 @@ const StrategicEngine = {
           result: isGreat ? '大成功' : isSuccess ? '成功' : '失败',
           mult,
         });
-        state.funding -= (act.fundingCost || 0);
+        /* 支援效果：资金消耗降低 */
+        const fc = (act.fundingCost || 0);
+        const reducedFc = supportResults && supportResults.fundCostReduce > 0
+          ? Math.max(0, fc - Math.round(fc * supportResults.fundCostReduce / 100))
+          : fc;
+        state.funding -= reducedFc;
       });
 
-      /* AI 反制 */
+      /* === 阶段三：AI 反制（受支援行动敌方削弱影响） === */
       const aiAction = this._selectAICounter(scenario, state, playerActions);
       const aiEffects = {};
       if(aiAction){
-        const aiSuccess = Math.random() < 0.65;
+        let aiSuccessRate = 0.65;
+        /* 侦察暴露降低AI成功率 */
+        if(supportResults && supportResults.revealEnemy) aiSuccessRate -= 0.12;
+        /* 敌方削弱进一步降低 */
+        if(supportResults && supportResults.enemyDebuff){
+          const debuffSum = Object.values(supportResults.enemyDebuff).reduce((s, v) => s + Math.abs(v), 0);
+          aiSuccessRate -= Math.min(0.15, debuffSum * 0.01);
+        }
+        const aiSuccess = Math.random() < Math.max(0.3, aiSuccessRate);
         const aiMult = aiSuccess ? 0.8 : 0.3;
         Object.entries(aiAction.effects || {}).forEach(([k, v]) => {
           aiEffects[k] = (aiEffects[k] || 0) - Math.abs(v) * aiMult;
@@ -751,7 +957,7 @@ const StrategicEngine = {
         });
       }
 
-      /* 合并效果 */
+      /* === 阶段四：合并效果 === */
       const merged = {};
       const allDomains = Object.keys({...playerEffects, ...aiEffects});
       allDomains.forEach(k => {
@@ -761,7 +967,7 @@ const StrategicEngine = {
         state.domains[k] = Math.max(0, Math.min(100, (state.domains[k] || 50) + merged[k]));
       });
 
-      /* 升级度 */
+      /* 升级度（含支援行动介入） */
       const escPush = playerActions.reduce((s, a) => s + (a.escalation || 0), 0);
       state.escalation = Math.max(1, Math.min(5, state.escalation + Math.round(escPush / 2)));
 
@@ -780,21 +986,25 @@ const StrategicEngine = {
 
       /* 力量消耗 */
       state.forces.forEach(f => {
-        const maxRisk = Math.max(...playerActions.filter(a => a.domain === 'military').map(a => a.risk || 0.1));
+        const militaryActs = playerActions.filter(a => a.domain === 'military');
+        const maxRisk = militaryActs.length > 0
+          ? Math.max(...militaryActs.map(a => a.risk || 0.1))
+          : 0;
         if(maxRisk >= 0.3) f.readiness = Math.max(20, (f.readiness || 70) - 4);
         else if(maxRisk >= 0.15) f.readiness = Math.max(20, (f.readiness || 70) - 2);
-        else f.readiness = Math.max(20, (f.readiness || 70) - 1);
+        else if(militaryActs.length > 0) f.readiness = Math.max(20, (f.readiness || 70) - 1);
         const greats = diceResults.filter(d => d.result === '大成功').length;
         f.readiness = Math.min(100, f.readiness + greats * 2);
       });
 
-      /* 记录轮次 */
+      /* 记录轮次（含支援行动） */
       state.roundByRound.push({
         round: state.round,
         domains: { ...state.domains },
         escalation: state.escalation,
         reputation: Math.round(state.reputation),
         domesticSupport: Math.round(state.domesticSupport),
+        supportActions: supportResults ? supportResults.log : [],
         playerActions: playerActions.map(a => a.name),
         aiAction: aiAction ? aiAction.name : '观察观望',
         diceResults,
@@ -1430,6 +1640,16 @@ function _renderExecution(){
                         <span class="so-round-num">第${r.round}轮</span>
                         <span class="so-round-stats">升级${r.escalation} · 声望${r.reputation} · 国内${r.domesticSupport}</span>
                       </div>
+                      ${r.supportActions && r.supportActions.length > 0 ? `
+                        <div class="so-round-support">
+                          <span class="so-round-label" style="color:var(--amber)">🔗 支援</span>
+                          ${r.supportActions.map(s => {
+                            const color = s.result === '大成功' ? 'var(--green)' : s.result === '成功' ? 'var(--cyan)' : 'var(--red)';
+                            const catIcon = s.category === 'intel' ? '🔍' : s.category === 'logistics' ? '📦' : s.category === 'economy' ? '💰' : s.category === 'diplomatic' ? '🤝' : '🌐';
+                            return `<span class="so-round-action so-round-action-support" style="border-color:${color}">${catIcon} ${s.action} [${s.roll}/${s.successRate} ${s.result}]</span>`;
+                          }).join('')}
+                        </div>
+                      ` : ''}
                       <div class="so-round-actions">
                         <div class="so-round-side">
                           <span class="so-round-label" style="color:var(--red)">我方</span>
