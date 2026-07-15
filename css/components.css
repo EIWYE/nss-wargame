@@ -3458,3 +3458,35 @@
   .ai-dash-memory{flex-direction:column;gap:4px;text-align:center}
 }
 
+/* ===== v12.3 威胁上下文感知样式 ===== */
+.threat-context-section{
+  animation:fadeIn .4s ease;
+}
+.threat-response-card{
+  transition:all .25s ease;
+  position:relative;
+  overflow:hidden;
+}
+.threat-response-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+}
+.threat-response-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--red,#ff4757),transparent);
+  animation:scan 3s linear infinite;
+}
+@keyframes scan{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+.threat-context-section .threat-response-card button:hover{
+  transform:scale(1.05);
+}
+@media(max-width:768px){
+  .threat-response-card{padding:10px 12px}
+}
+

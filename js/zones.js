@@ -1323,8 +1323,11 @@ const ZoneUI = {
         </div>
       </div>
 
-      ${scenarioNote}
-      <div class="z-cards-grid">${cardsHtml}</div>
+    ${scenarioNote}
+
+    ${typeof ThreatContext !== 'undefined' ? ThreatContext._renderGlobalThreatOverview() : ''}
+
+    <div class="z-cards-grid">${cardsHtml}</div>
       ${bonusHtml}
 
       <div style="display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px">
@@ -1541,12 +1544,48 @@ const ZoneUI = {
 
       ${supportHtml}
 
+      ${typeof ThreatContext !== 'undefined' ? ThreatContext.renderThreatResponseSection(zoneId) : ''}
+
+      ${(zoneId === 'intel' && typeof INTEL !== 'undefined') ? ZoneUI._renderIntelFeed() : ''}
+
       <div class="panel" style="padding:16px 20px">
         <div style="font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:12px">
-          ⚡ 行动执行 ${hasExec?`<span style="font-size:11px;color:${cfg.color};font-weight:400">· 执行中: ${execAction?.name}</span>`:''}
+          ⚡ 常规行动执行 ${hasExec?`<span style="font-size:11px;color:${cfg.color};font-weight:400">· 执行中: ${execAction?.name}</span>`:''}
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">${actionHtml}</div>
       </div>
+    </div>`;
+  },
+
+  /* ===== 渲染情报中心已收情报通报 ===== */
+  _renderIntelFeed(){
+    const intelItems = INTEL.slice(0, 6);
+    if(!intelItems.length) return '';
+
+    const html = intelItems.map(item => {
+      const relColor = item.reliability === 'A' ? '#2ed573' : item.reliability === 'B' ? '#ffa502' : '#ff4757';
+      const domainInfo = (typeof DOMAIN_MAP !== 'undefined' && DOMAIN_MAP[item.type]) ? DOMAIN_MAP[item.type] : null;
+      const domainColor = domainInfo ? domainInfo.color : 'var(--cyan)';
+      const domainIcon = domainInfo ? domainInfo.icon : '📡';
+      return `
+      <div style="padding:10px 14px;background:rgba(0,180,216,.04);border:1px solid var(--border);border-radius:6px;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+          <span style="padding:1px 6px;background:${relColor}15;color:${relColor};border-radius:2px;font-size:9px;font-weight:700">${item.reliability}</span>
+          <span style="font-size:11px;color:${domainColor};font-weight:600">${domainIcon} ${item.source}</span>
+          <span style="font-size:10px;color:var(--txt-2);margin-left:auto">${item.time}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--txt-0);margin-bottom:3px">${item.title}</div>
+        <div style="font-size:11px;color:var(--txt-1);line-height:1.5">${item.summary}</div>
+        ${item.modifier ? `<div style="font-size:10px;color:var(--green);margin-top:4px">→ 推演修正: ${item.modifier.domain}域 +${item.modifier.bonus}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="panel" style="padding:16px 20px;margin-bottom:14px;border-color:#a29bfe33">
+      <div style="font-size:13px;font-weight:700;color:#a29bfe;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+        📡 已收情报通报 <span style="font-size:10px;color:var(--txt-2);font-weight:400">${intelItems.length}条 · 来源${new Set(intelItems.map(i => i.source)).size}个</span>
+      </div>
+      ${html}
     </div>`;
   },
 
@@ -1851,9 +1890,10 @@ const ZoneUI = {
   /* ===== 重置 ===== */
   resetAll(){
     ZoneSystem.reset();
+    if(typeof ThreatContext !== 'undefined') ThreatContext.reset();
     if(this._viewMode === 'detail') this.backToGlobal();
     else this._refreshGlobal();
-    this._flashMsg('已重置所有功能区', 'info');
+    this._flashMsg('已重置所有功能区（含威胁响应）', 'info');
   },
 
   /* ===== 内部回调 ===== */

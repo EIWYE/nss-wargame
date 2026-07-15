@@ -1483,13 +1483,16 @@ const App = {
         </div>
         <div class="stat-card c-red" style="padding:10px 12px">
           <div class="sc-top"><span class="sc-label">活跃威胁</span><span class="sc-icon">⚠️</span></div>
-          <div class="sc-val red" id="ov-threats" style="font-size:20px">0</div>
+          <div class="sc-val red" id="ov-threats" style="font-size:20px">${(typeof ThreatContext !== 'undefined') ? ThreatContext.getActiveThreats().length : activeThreats}</div>
         </div>
       </div>
     </div>
 
     <!-- ===== AI战略智囊 (人机协同) ===== -->
     ${(typeof AIAdvisor !== 'undefined') ? AIAdvisor.renderDashboardWidget() : ''}
+
+    <!-- ===== 威胁响应态势 (人机协同·威胁上下文) ===== -->
+    ${(typeof ThreatContext !== 'undefined') ? ThreatContext._renderDashboardWidget() : ''}
 
     <!-- ===== 态势感知动态面板 ===== -->
     <div class="sa-container fade-in" style="margin-bottom:16px">
