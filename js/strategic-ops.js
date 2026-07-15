@@ -2384,6 +2384,27 @@ const StrategicOps = {
       });
     }
 
+    /* === 生态系统同步：综合推演结果传播到全局状态 === */
+    if(typeof GlobalStateSync !== 'undefined' && STRATEGIC_STATE.scenarioResults.length > 0){
+      // 以最后一个场景结果作为全局状态基准
+      const lastResult = STRATEGIC_STATE.scenarioResults[STRATEGIC_STATE.scenarioResults.length - 1];
+      GlobalStateSync.syncWargameResult({
+        scenarioId: lastResult.scenarioId,
+        scenarioName: chain.name + ' (综合推演)',
+        score: STRATEGIC_STATE.finalAssessment?.avgScore || lastResult.score,
+        grade: STRATEGIC_STATE.finalAssessment?.grade || lastResult.grade,
+        domains: STRATEGIC_STATE.globalState || lastResult.domains,
+        forces: (lastResult.forces || []).map(f => ({
+          branch: f.name, name: f.name,
+          readiness: f.readiness,
+        })),
+        escalation: lastResult.escalation || 1,
+        reputation: lastResult.reputation || 60,
+        domesticSupport: lastResult.domesticSupport || 60,
+        funding: lastResult.funding || 500,
+      }, 'strategic');
+    }
+
     STRATEGIC_STATE.phase = 'analysis';
     App.switchTab('zone_strategic');
   },

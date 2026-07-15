@@ -797,6 +797,17 @@ const ZoneSystem = {
         this._synergyMap[tid] += action.synergy[tid];
       });
     }
+
+    /* === 生态系统同步：功能区操作传播到全局状态 === */
+    if(typeof GlobalStateSync !== 'undefined'){
+      GlobalStateSync.syncZoneOperation(zoneId, action.name, {
+        improvement: Math.round(
+          (Object.values(action.effects || {}).reduce((s, fx) => {
+            return s + Object.values(fx).reduce((a, v) => a + v, 0);
+          }, 0) / Math.max(1, Object.keys(action.effects || {}).length)) || 2
+        ),
+      });
+    }
   },
 
   /* ===== 更新战备度 ===== */
@@ -1074,6 +1085,12 @@ const TrainingSystem = {
     }
 
     ZoneSystem._addEvent('training', `🎓 完成训练「${mod.name}」，获得推演加成：${mod.bonus.desc}`);
+
+    /* === 生态系统同步：训练完成传播到全局状态 === */
+    if(typeof GlobalStateSync !== 'undefined'){
+      GlobalStateSync.syncTrainingComplete(id, mod.name);
+    }
+
     return true;
   },
 

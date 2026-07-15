@@ -1386,7 +1386,35 @@ const App = {
   renderOverview(){
     const games = STATE.games;
     const avgScore = games.length ? Math.round(games.reduce((s,g) => s + g.score, 0) / games.length) : 0;
-    const activeThreats = THREATS.filter(t => t.status !== 'resolved').length;
+
+    /* === 生态系统融合：从同步中枢获取实时数据 === */
+    const liveDomains = (typeof GlobalStateSync !== 'undefined')
+      ? GlobalStateSync.getLiveDomains() : null;
+    const liveForces = (typeof GlobalStateSync !== 'undefined')
+      ? GlobalStateSync.getLiveForces() : FORCES;
+    const liveThreats = (typeof GlobalStateSync !== 'undefined')
+      ? GlobalStateSync.getLiveThreats() : THREATS;
+    const liveIntel = (typeof GlobalStateSync !== 'undefined')
+      ? GlobalStateSync.getLiveIntel() : [];
+    const liveMonitor = (typeof GlobalStateSync !== 'undefined')
+      ? GlobalStateSync.getLiveSystemMonitor() : {};
+    const domainList = liveDomains ? Object.entries(liveDomains)
+      .filter(([k]) => k !== '_source')
+      .map(([key, value]) => {
+        const d = DOMAINS.find(dd => {
+          const domainKeys = { military:0, economic:1, cyber:2, diplomatic:3, space:4, information:5 };
+          return domainKeys[key] === DOMAINS.indexOf(dd);
+        }) || { name: key, color: 'var(--cyan)', icon: '📊', code: key.toUpperCase(), trend: 0 };
+        return {
+          ...d,
+          _liveReadiness: value,
+          _liveTrend: d.trend || 0,
+        };
+      }) : DOMAINS;
+
+    const activeThreats = liveThreats.filter(t =>
+      (t.level === '严重' || t.value < 30) || (t.status && t.status !== 'resolved')
+    ).length;
     const threatPct = Math.min(Math.round((STATE.threatLevel || 72) / 10), 10);
 
     return `
@@ -1475,15 +1503,16 @@ const App = {
             <span class="sa-ph-count" id="saThreatCount">${activeThreats}条</span>
           </div>
           <div class="sa-feed-body">
-            ${THREATS.slice(0,5).map(t => {
-              const cls = t.severity >= 5 ? 'sa-feed-urgent' : t.severity >= 4 ? 'sa-feed-high' : '';
-              const tagColor = t.severity >= 5 ? 'var(--red)' : t.severity >= 4 ? 'var(--amber)' : 'var(--cyan)';
-              const tagBg = t.severity >= 5 ? 'rgba(255,71,87,.15)' : t.severity >= 4 ? 'rgba(255,165,2,.15)' : 'rgba(0,180,216,.15)';
+            ${liveThreats.slice(0,5).map(t => {
+              const sev = t.level === '严重' ? 5 : t.level === '较高' ? 4 : t.level === '中等' ? 3 : t.severity || 3;
+              const cls = sev >= 5 ? 'sa-feed-urgent' : sev >= 4 ? 'sa-feed-high' : '';
+              const tagColor = sev >= 5 ? 'var(--red)' : sev >= 4 ? 'var(--amber)' : 'var(--cyan)';
+              const tagBg = sev >= 5 ? 'rgba(255,71,87,.15)' : sev >= 4 ? 'rgba(255,165,2,.15)' : 'rgba(0,180,216,.15)';
               return `
               <div class="sa-feed-item ${cls}">
-                <span class="sa-fi-time">${esc(t.time)}</span>
-                <span class="sa-fi-tag" style="background:${tagBg};color:${tagColor}">威胁${t.severity}</span>
-                <span class="sa-fi-text">${esc(t.title)}</span>
+                <span class="sa-fi-time">${esc(t.time || '实时')}</span>
+                <span class="sa-fi-tag" style="background:${tagBg};color:${tagColor}">${t.value ? '值'+t.value : '威胁'+sev}</span>
+                <span class="sa-fi-text">${esc(t.title || t.name)}</span>
               </div>`;
             }).join('')}
           </div>
@@ -1505,9 +1534,9 @@ const App = {
               <path d="M 60,60 L 60,5 A 55,55 0 0,1 108,38 Z" fill="rgba(0,180,216,.10)">
                 <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="4s" repeatCount="indefinite"/>
               </path>
-              ${FORCES.slice(0,6).map((f,i) => {
+              ${liveForces.slice(0,6).map((f,i) => {
                 const ang = (i * 60 - 90) * Math.PI / 180;
-                const r = 30 + f.readiness * 0.2;
+                const r = 30 + (f.readiness || 70) * 0.2;
                 const x = 60 + r * Math.cos(ang);
                 const y = 60 + r * Math.sin(ang);
                 return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#00b4d8" opacity=".8"/>`;
@@ -1515,9 +1544,9 @@ const App = {
               <circle cx="60" cy="60" r="4" fill="#00b4d8"/>
             </svg>
             <div class="sa-radar-stats">
-              <div class="sa-rs-item"><span class="sa-rs-label">战备力量</span><span class="sa-rs-val" style="color:var(--cyan)">${FORCES.length}</span></div>
-              <div class="sa-rs-item"><span class="sa-rs-label">已部署</span><span class="sa-rs-val" style="color:var(--green)">${FORCES.filter(f=>f.status==='deployed'||f.status==='active').length}</span></div>
-              <div class="sa-rs-item"><span class="sa-rs-label">高度戒备</span><span class="sa-rs-val" style="color:var(--red)">${FORCES.filter(f=>f.status==='high_alert').length}</span></div>
+              <div class="sa-rs-item"><span class="sa-rs-label">战备力量</span><span class="sa-rs-val" style="color:var(--cyan)">${liveForces.length}</span></div>
+              <div class="sa-rs-item"><span class="sa-rs-label">已部署</span><span class="sa-rs-val" style="color:var(--green)">${liveForces.filter(f=>f.status==='deployed'||f.status==='active').length}</span></div>
+              <div class="sa-rs-item"><span class="sa-rs-label">高戒备</span><span class="sa-rs-val" style="color:var(--red)">${liveForces.filter(f=>f.status==='high_alert').length}</span></div>
             </div>
           </div>
         </div>
@@ -1529,20 +1558,20 @@ const App = {
             <span class="sa-ph-title">六域战备</span>
           </div>
           <div class="sa-domain-body">
-            ${DOMAINS.map(d => `
+            ${domainList.map(d => `
             <div class="sa-ds-row">
               <div class="sa-ds-head">
                 <span class="sa-ds-name" style="color:${d.color}">${d.icon} ${d.name}</span>
-                <span class="sa-ds-val" style="color:${d.color}">${d.readiness}%</span>
+                <span class="sa-ds-val" style="color:${d.color}">${d._liveReadiness || d.readiness}%</span>
               </div>
               <div class="sa-ds-bar-wrap">
-                <div class="sa-ds-bar-threat" style="width:${d.threatLevel * 20}%;background:${d.color}88"></div>
-                <div class="sa-ds-bar-ready" style="width:${d.readiness}%;background:${d.color}"></div>
+                <div class="sa-ds-bar-threat" style="width:${(d.threatLevel || 3) * 20}%;background:${d.color}88"></div>
+                <div class="sa-ds-bar-ready" style="width:${d._liveReadiness || d.readiness}%;background:${d.color}"></div>
                 <div class="sa-ds-bar-shine"></div>
               </div>
               <div class="sa-ds-meta">
-                <span style="color:var(--txt-2)">威胁${d.threatLevel}/5</span>
-                <span style="color:${d.trend > 0 ? 'var(--green)' : d.trend < 0 ? 'var(--red)' : 'var(--txt-2)'}">${d.trend > 0 ? '↑' : d.trend < 0 ? '↓' : '→'} ${Math.abs(d.trend)}</span>
+                <span style="color:var(--txt-2)">威胁${d.threatLevel || 3}/5</span>
+                <span style="color:${(d._liveTrend || d.trend) > 0 ? 'var(--green)' : (d._liveTrend || d.trend) < 0 ? 'var(--red)' : 'var(--txt-2)'}">${(d._liveTrend || d.trend) > 0 ? '↑' : (d._liveTrend || d.trend) < 0 ? '↓' : '→'} ${Math.abs(d._liveTrend || d.trend)}</span>
               </div>
             </div>`).join('')}
           </div>
@@ -1575,13 +1604,13 @@ const App = {
           <div class="sa-ticker-content">
             <span style="color:var(--cyan)">DEFCON ${STATE.defcon}</span>
             <span style="color:var(--amber)">威胁指数 ${STATE.threatLevel || 72}</span>
-            <span style="color:var(--green)">战备力量 ${FORCES.length}支</span>
-            <span style="color:var(--cyan)">监控节点 ${DOMAINS[2].metrics['监控节点']}</span>
+            <span style="color:var(--green)">战备力量 ${liveForces.length}支</span>
+            <span style="color:var(--cyan)">域值均分 ${liveMonitor.domainAvg || '--'}%</span>
             <span style="color:var(--red)">活跃威胁 ${activeThreats}个</span>
             <span style="color:var(--cyan)">DEFCON ${STATE.defcon}</span>
             <span style="color:var(--amber)">威胁指数 ${STATE.threatLevel || 72}</span>
-            <span style="color:var(--green)">战备力量 ${FORCES.length}支</span>
-            <span style="color:var(--cyan)">监控节点 ${DOMAINS[2].metrics['监控节点']}</span>
+            <span style="color:var(--green)">战备力量 ${liveForces.length}支</span>
+            <span style="color:var(--cyan)">域值均分 ${liveMonitor.domainAvg || '--'}%</span>
             <span style="color:var(--red)">活跃威胁 ${activeThreats}个</span>
           </div>
         </div>
@@ -1590,8 +1619,11 @@ const App = {
 
     <!-- ===== 六域安全态势卡片 ===== -->
     <div class="grid-3 fade-in" style="margin-bottom:16px">
-      ${DOMAINS.map(d => `
-      <div class="domain-card" style="--dc-color:${d.color};--dc-pct:${d.readiness}">
+      ${domainList.map(d => {
+        const readiness = d._liveReadiness || d.readiness;
+        const trendVal = d._liveTrend || d.trend || 0;
+        return `
+      <div class="domain-card" style="--dc-color:${d.color};--dc-pct:${readiness}">
         <div class="dc-accent" style="background:${d.color}"></div>
         <div class="dc-head">
           <div class="dc-name" style="color:${d.color}">${d.icon} ${d.name}</div>
@@ -1600,17 +1632,18 @@ const App = {
         <div class="dc-anim-row">
           <div class="dc-anim">${this.domainAnim(d.id, d.color)}</div>
           <div class="dc-anim-info">
-            <div class="dc-anim-pct" style="color:${d.color}">${d.readiness}<small>%</small></div>
+            <div class="dc-anim-pct" style="color:${d.color}">${readiness}<small>%</small></div>
             <div class="dc-anim-trend">
-              <span class="trend ${d.trend > 0 ? 'up' : d.trend < 0 ? 'down' : 'flat'}">${d.trend > 0 ? '↑ +' + d.trend : d.trend < 0 ? '↓ ' + d.trend : '→ 0'}</span>
-              <span style="color:var(--txt-2)">战备就绪</span>
+              <span class="trend ${trendVal > 0 ? 'up' : trendVal < 0 ? 'down' : 'flat'}">${trendVal > 0 ? '↑ +' + trendVal : trendVal < 0 ? '↓ ' + trendVal : '→ 0'}</span>
+              <span style="color:var(--txt-2)">${d._liveReadiness !== undefined ? '实时战备' : '初始就绪'}</span>
             </div>
           </div>
         </div>
         <div class="dc-metrics">
-          ${Object.entries(d.metrics).map(([k,v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
+          ${Object.entries(d.metrics || {}).map(([k,v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
         </div>
-      </div>`).join('')}
+      </div>`;
+      }).join('')}
     </div>
 
     <!-- ===== 双栏：活跃威胁 + 情报预警 ===== -->
@@ -1623,23 +1656,24 @@ const App = {
         </div>
         <div class="panel-body">
           <div class="threat-list">
-            ${THREATS.slice(0,4).map(t => {
-              const dm = DOMAIN_MAP[t.type] || DOMAIN_MAP.military;
-              const sevColor = t.severity >= 4 ? 'var(--red)' : 'var(--amber)';
-              const sevBg = t.severity >= 4 ? 'rgba(255,71,87,.1)' : 'rgba(255,165,2,.1)';
+            ${liveThreats.slice(0,4).map(t => {
+              const dm = DOMAIN_MAP[t.type || t.domain] || DOMAIN_MAP.military;
+              const sev = t.level === '严重' ? 4 : t.level === '较高' ? 3 : t.severity || 2;
+              const sevColor = sev >= 4 ? 'var(--red)' : 'var(--amber)';
+              const sevBg = sev >= 4 ? 'rgba(255,71,87,.1)' : 'rgba(255,165,2,.1)';
               return `
               <div class="threat-item">
-                <div class="ti-dot" style="background:${dm.color}"></div>
+                <div class="ti-dot" style="background:${dm ? dm.color : 'var(--cyan)'}"></div>
                 <div class="ti-body">
-                  <div class="ti-title">${esc(t.title)}</div>
-                  <div class="ti-desc">${esc(t.desc)}</div>
+                  <div class="ti-title">${esc(t.title || t.name)}</div>
+                  <div class="ti-desc">${esc(t.desc || t.detail || '基于实时态势评估的动态威胁')}</div>
                   <div class="ti-meta">
-                    <span class="tag" style="color:${dm.color}">${dm.icon} ${dm.label}</span>
-                    <span class="time">${esc(t.time)}</span>
-                    <span style="font-size:11px;color:var(--txt-2)">📍 ${esc(t.location)}</span>
+                    <span class="tag" style="color:${dm ? dm.color : 'var(--cyan)'}">${dm ? dm.icon : '📡'} ${dm ? dm.label : '动态'}</span>
+                    <span class="time">${esc(t.time || '实时')}</span>
+                    <span style="font-size:11px;color:var(--txt-2)">📍 ${esc(t.location || t.source || '态势感知')}</span>
                   </div>
                 </div>
-                <span class="ti-sev" style="background:${sevBg};color:${sevColor}">Lv${t.severity}</span>
+                <span class="ti-sev" style="background:${sevBg};color:${sevColor}">${t.level || 'Lv' + sev}</span>
               </div>`;
             }).join('')}
           </div>
@@ -1650,22 +1684,21 @@ const App = {
       <div class="panel">
         <div class="panel-header">
           <span class="panel-title" style="color:var(--amber)">🔍 情报预警</span>
-          <span style="font-size:12px;color:var(--amber);font-family:Consolas,monospace">${INTEL.length}条</span>
+          <span style="font-size:12px;color:var(--amber);font-family:Consolas,monospace">${liveIntel.length}条</span>
         </div>
         <div class="panel-body">
           <div class="sa-intel-body">
-            ${INTEL.slice(0,4).map(i => {
-              const dm = DOMAIN_MAP[i.type] || DOMAIN_MAP.intel;
-              const relColor = i.reliability === 'A' ? 'var(--green)' : i.reliability === 'B' ? 'var(--amber)' : 'var(--red)';
-              const relBg = i.reliability === 'A' ? 'rgba(46,213,115,.15)' : i.reliability === 'B' ? 'rgba(255,165,2,.15)' : 'rgba(255,71,87,.15)';
+            ${liveIntel.slice(0,4).map(i => {
+              const sevColor = i.severityColor || (i.reliability === 'A' ? 'var(--green)' : i.reliability === 'B' ? 'var(--amber)' : 'var(--red)');
+              const sevBg = i.severityColor ? sevColor.replace(')',',.15)') : (i.reliability === 'A' ? 'rgba(46,213,115,.15)' : 'rgba(255,165,2,.15)');
+              const label = i.severity || i.reliability || 'A';
               return `
-              <div class="sa-intel-item ${i.reliability === 'A' ? 'sa-intel-critical' : ''}">
-                <div class="sa-ii-icon" style="background:${relBg};color:${relColor}">${i.reliability}</div>
+              <div class="sa-intel-item ${(i.severity === '严重' || i.reliability === 'A') ? 'sa-intel-critical' : ''}">
+                <div class="sa-ii-icon" style="background:${sevBg};color:${sevColor}">${label.slice(0,1)}</div>
                 <div class="sa-ii-content">
                   <div class="sa-ii-title">${esc(i.title)}</div>
                   <div class="sa-ii-meta">
-                    <span style="color:${dm.color}">${dm.icon} ${i.source}</span>
-                    <span style="color:var(--txt-2)">⏱ ${esc(i.time)}</span>
+                    <span style="color:var(--txt-2)">⏱ ${esc(i.time || '实时')}</span>
                   </div>
                 </div>
               </div>`;
@@ -1685,29 +1718,29 @@ const App = {
         <div class="grid-2">
           <div>
             <div class="sm-metric">
-              <div class="sm-head"><span class="name">导演部算力</span><span class="sm-val" style="color:var(--cyan)">42%</span></div>
-              <div class="sm-track"><div class="sm-fill cyan" id="m-cpu" style="width:42%"></div></div>
+              <div class="sm-head"><span class="name">域值均分</span><span class="sm-val" style="color:var(--cyan)">${liveMonitor.domainAvg || 50}%</span></div>
+              <div class="sm-track"><div class="sm-fill cyan" id="m-cpu" style="width:${liveMonitor.domainAvg || 42}%"></div></div>
             </div>
             <div class="sm-metric">
-              <div class="sm-head"><span class="name">引擎内存</span><span class="sm-val" style="color:var(--amber)">68%</span></div>
-              <div class="sm-track"><div class="sm-fill amber" id="m-mem" style="width:68%"></div></div>
+              <div class="sm-head"><span class="name">力量战备</span><span class="sm-val" style="color:var(--amber)">${liveMonitor.forceAvg || 68}%</span></div>
+              <div class="sm-track"><div class="sm-fill amber" id="m-mem" style="width:${liveMonitor.forceAvg || 68}%"></div></div>
             </div>
           </div>
           <div>
             <div class="sm-metric">
-              <div class="sm-head"><span class="name">网络负载</span><span class="sm-val" style="color:var(--green)">55%</span></div>
-              <div class="sm-track"><div class="sm-fill green" id="m-net" style="width:55%"></div></div>
+              <div class="sm-head"><span class="name">推演记录</span><span class="sm-val" style="color:var(--green)">${liveMonitor.gameCount || 0}场</span></div>
+              <div class="sm-track"><div class="sm-fill green" id="m-net" style="width:${Math.min(100, (liveMonitor.gameCount || 0) * 5)}%"></div></div>
             </div>
             <div class="sm-metric">
-              <div class="sm-head"><span class="name">安全防护</span><span class="sm-val" style="color:var(--cyan)">88%</span></div>
-              <div class="sm-track"><div class="sm-fill cyan" id="m-sec" style="width:88%"></div></div>
+              <div class="sm-head"><span class="name">活跃威胁</span><span class="sm-val" style="color:var(--cyan)">${liveMonitor.activeThreats || 0}个</span></div>
+              <div class="sm-track"><div class="sm-fill cyan" id="m-sec" style="width:${(liveMonitor.activeThreats || 0) * 15}%"></div></div>
             </div>
           </div>
         </div>
         <div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--txt-2);font-family:Consolas,monospace">
-          <span>延迟: <span style="color:var(--cyan)" id="m-latency">14ms</span></span>
-          <span>节点: <span style="color:var(--cyan)" id="m-nodes">001247</span></span>
-          <span>入侵检测: <span style="color:var(--green)">正常</span></span>
+          <span>推演: <span style="color:var(--cyan)" id="m-latency">${liveMonitor.gameCount || 0}场</span></span>
+          <span>力量: <span style="color:var(--cyan)" id="m-nodes">${liveForces.length}支</span></span>
+          <span>态势: <span style="color:var(--green)">${liveMonitor.domainAvg || 50}分</span></span>
         </div>
       </div>
     </div>
@@ -1831,11 +1864,14 @@ const App = {
 
   /* ===== 力量战备 ===== */
   renderForces(){
-    /* 场景化：推演进行时使用场景化力量 */
+    /* 场景化：推演进行时使用场景化力量，否则使用实时更新数据 */
     const wgState = (typeof Wargame !== 'undefined' && Wargame.state) ? Wargame.state : null;
-    const forces = wgState ? wgState.forces : FORCES;
+    const liveForcesData = (typeof GlobalStateSync !== 'undefined' && !wgState)
+      ? GlobalStateSync.getLiveForces() : null;
+    const forces = wgState ? wgState.forces : (liveForcesData || FORCES);
     const scenarioName = wgState ? wgState.scenario.name : null;
     const scenarioId = wgState ? wgState.scenario.id : null;
+    const isLiveData = !!(liveForcesData && !wgState);
 
     /* 计算每个军种关联的行动 */
     const forceActions = {};

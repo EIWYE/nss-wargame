@@ -2120,6 +2120,25 @@ const Wargame = {
       });
     }
 
+    /* === 生态系统同步：推演结果传播到全局状态 === */
+    if(typeof GlobalStateSync !== 'undefined'){
+      GlobalStateSync.syncWargameResult({
+        scenarioId: s.scenario.id,
+        scenarioName: s.scenario.name,
+        score: finalScore,
+        grade: grade,
+        domains: { ...s.domains },
+        forces: (s.forces || []).map(f => ({
+          branch: f.branch, name: f.name, code: f.code,
+          readiness: f.readiness,
+        })),
+        escalation: s.escalation,
+        reputation: s.reputation,
+        domesticSupport: s.domesticSupport,
+        funding: s.funding,
+      }, 'wargame');
+    }
+
     this.renderFinalResult();
   },
 
